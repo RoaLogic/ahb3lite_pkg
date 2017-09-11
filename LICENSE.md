@@ -1,10 +1,10 @@
-BSD License Agreement
+# BSD License Agreement
 PLEASE CAREFULLY REVIEW THE FOLLOWING TERMS AND CONDITIONS BEFORE DOWNLOADING AND USING THE LICENSED MATERIALS. THIS LICENSE AGREEMENT (“AGREEMENT”) IS A LEGAL AGREEMENT BETWEEN YOU (EITHER A SINGLE INDIVIDUAL, OR A SINGLE LEGAL ENTITY) (“YOU”) AND ROA LOGIC BV (“ROA LOGIC”) COVERING THE PRODUCTS OR SERVICES YOU PURCHASE FROM ROA LOGIC.
 
 By downloading and/or using or installing products from Roa Logic you automatically agree to and are bound by the terms and conditions of this agreement.
 
 
-DEFINITIONS
+## DEFINITIONS
 
 “Intellectual Property” means any or all of the following and all rights in, arising out of, or associated with:
 
@@ -21,7 +21,7 @@ DEFINITIONS
 “You” the opposite contract party as referred to in article 6:231, subsection c, of the Dutch Civil Code, being the party to whom an offer is made by Roa Logic, or with whom an agreement is concluded by Roa Logic, or to whom the Product is supplied.
 
 
-LICENSE TO USE
+## LICENSE TO USE
 
 Roa Logic hereby grants you a limited, non-exclusive, non-transferable, no-charge, and royalty-free copyright license to use, modify, and distribute the Product. Specifically you are allowed to:
 
@@ -31,7 +31,7 @@ Roa Logic hereby grants you a limited, non-exclusive, non-transferable, no-charg
 3. Roa Logic hereby grants you a limited, non-exclusive, non-transferable, no-charge, and royalty-free patent license to use, modify, and distribute the Product, where such license only applies to those patent claims licensable by Roa Logic.
 
 
-OWNERSHIP
+## OWNERSHIP
 
 The Product, its documentation, and any associated material is owned by Roa Logic and is protected by copyright and other intellectual property right laws.
 
@@ -42,24 +42,24 @@ Any modification or addition to the Product, documentation, and any associated m
 You shall not remove any copyright, disclaimers, or other notices from any parts of the Product.
 
 
-RIGHT OF EQUITABLE RELIEF
+## RIGHT OF EQUITABLE RELIEF
 
 You acknowledge and agree that violation of this agreement may cause Roa Logic irreparable injury for which an adequate remedy at law may not be available. Therefore Roa Logic shall be entitled to seek all remedies that may be available under equity, including immediate injunctive relief, in addition to whatever remedies may be available at law.
 
 
-DISCLAIMER OF WARRANTY
+## DISCLAIMER OF WARRANTY
 
 The Product is provided “AS IS”. Roa Logic has no obligation to provide maintenance or support services in connection with the Product.
 
 ROA LOGIC DISCLAIMS ALL WARRANTIES, CONDITIONS AND REPRESENTATIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, THOSE RELATED TO MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, SATISFACTORY QUALITY, ACCURACY OR COMPLETENESS OR RESULTS, CONFORMANCE WITH DESCRIPTION, AND NON-INFRINGEMENT.
 
 
-LIMITATION OF LIABILITY
+## LIMITATION OF LIABILITY
 
 TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL ROA LOGIC BE LIABLE TO YOU OR ANY THIRD PARTY FOR ANY INDIRECT, SPECIAL, CONSEQUENTIAL OR INCIDENTAL DAMAGES WHATSOEVER (INCLUDING, BUT NOT LIMITED TO, DAMAGES FOR LOSS OF PROFIT, BUSINESS INTERRUPTIONS OR LOSS OF INFORMATION) ARISING OUT OF THE USE OR INABILITY TO USE THE PRODUCT WHETHER BASED ON A CLAIM UNDER CONTRACT, TORT OR OTHER LEGAL THEORY, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 
-EXPORT RESTRICTIONS
+## EXPORT RESTRICTIONS
 
 The Product may be subject to U.S. or E.U. export laws and may be subject to export or import regulations in other countries. You agree to comply fully with all laws and regulations of the United States, European Union, and other countries to ensure that the product is not:
 
@@ -68,7 +68,7 @@ The Product may be subject to U.S. or E.U. export laws and may be subject to exp
 2. intended to be used for any purposes prohibited by export laws, including, but not limited to, nuclear, chemical, or biological weapons proliferation.
 
 
-APPLICABLE LAW AND CHOICE OF FORUM
+## APPLICABLE LAW AND CHOICE OF FORUM
 
 All agreements and contracts between you and Roa Logic, which these conditions are applicable to, shall be governed by Dutch law with the exclusion of the uniform UN Convention on Contracts for the International Sale of Goods (CISG) and other bilateral or multilateral treaties for the purpose of unifying international sales.
 
