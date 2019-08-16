@@ -112,7 +112,7 @@ interface ahb3lite_bus #(
   logic [HDATA_SIZE -1:0] HRDATA;
   logic                   HWRITE;
   logic [            2:0] HSIZE;
-  logic [            3:0] HBURST;
+  logic [            2:0] HBURST;
   logic [            3:0] HPROT;
   logic [            1:0] HTRANS;
   logic                   HMASTLOCK;
