@@ -111,15 +111,17 @@ import ahb3lite_pkg::*;
 
 
   task automatic read (
-    input [HADDR_SIZE -1:0] address,
-    ref   [HDATA_SIZE -1:0] data[],
-    input [HSIZE_SIZE -1:0] size,
-    input [HBURST_SIZE-1:0] burst
+    input  [HADDR_SIZE -1:0] address,
+    output [HDATA_SIZE -1:0] data[],
+    input  [HSIZE_SIZE -1:0] size,
+    input  [HBURST_SIZE-1:0] burst
   );
     int beats;
 
     beats = get_beats_per_burst(burst);
     if (beats < 0) beats = data.size();
+
+    data = new[beats];
 
     fork
         ahb_cmd (address, size, burst, 1'b1, beats);
@@ -177,24 +179,22 @@ import ahb3lite_pkg::*;
     logic [HDATA_SIZE       -1:0] data_copy[],
                                   tmp_var;
 
-    if (rw)
-    begin
-        HWDATA <= 'hx;
-
-        //extra cycle for reading
-        //read at the end of the cycle
-        wait4hready();
-    end
-    else
-    begin
-        //copy data, prevent it being overwritten by caller
-        data_copy = data;
-    end
-
-    wait4hready();
+    //copy data, prevent it being overwritten by caller
+    data_copy = data;
 
     //get the address offset. No checks if the offset is legal
     byte_offset = address % (HDATA_SIZE/8);
+
+    wait4hready();
+
+    if (rw)
+    begin
+        //extra cycle for reading
+        //read at the end of the cycle
+        wait4hready();
+
+        HWDATA <= 'hx;
+    end
 
     //transfer beats
     for (int nbeat = 0; nbeat < beats; nbeat++)
