@@ -87,6 +87,70 @@ package ahb3lite_pkg;
   localparam       HRESP_OKAY  = 1'b0,
                    HRESP_ERROR = 1'b1;
 
+
+  /*
+   * functions
+   */
+
+  //is this a wrap burst?
+  function automatic logic ahb_is_wrap_burst;
+    input [HBURST_SIZE-1:0] hburst;
+
+    ahb_is_wrap_burst = |hburst[2:1] & ~hburst[0];
+  endfunction : ahb_is_wrap_burst
+
+
+  //How many beats in burst
+  function automatic int ahb_hburst2beats;
+    input [HBURST_SIZE-1:0] hburst;
+
+    case (hburst)
+      HBURST_SINGLE: ahb_hburst2beats =  1;
+      HBURST_INCR  : ahb_hburst2beats =  1; //actually unlimited
+      HBURST_WRAP4 : ahb_hburst2beats =  4;
+      HBURST_INCR4 : ahb_hburst2beats =  4;
+      HBURST_WRAP8 : ahb_hburst2beats =  8;
+      HBURST_INCR8 : ahb_hburst2beats =  8;
+      HBURST_WRAP16: ahb_hburst2beats = 16;
+      HBURST_INCR16: ahb_hburst2beats = 16;
+    endcase
+  endfunction : ahb_hburst2beats
+
+
+  //How many bytes per beat
+  function automatic int ahb_hsize2bytes;
+    input [HBURST_SIZE-1:0] hsize;
+
+    ahb_hsize2bytes = 1'h1 << hsize;
+  endfunction : ahb_hsize2bytes
+
+
+  //burst address mask
+  function automatic logic [6:0] ahb_burst_address_mask;
+    input int hdata_size;
+
+    //returns a mask for the lesser bits of the address
+    //meaning bits [  0] for 16bit data
+    //             [1:0] for 32bit data
+    //             [2:0] for 64bit data
+    //etc
+
+    //default value, prevent warnings
+    ahb_burst_address_mask = 0;
+
+    //What are the lesser bits in HADDR?
+    case (hdata_size)
+          1024: ahb_burst_address_mask = 7'b111_1111;
+           512: ahb_burst_address_mask = 7'b011_1111;
+           256: ahb_burst_address_mask = 7'b001_1111;
+           128: ahb_burst_address_mask = 7'b000_1111;
+            64: ahb_burst_address_mask = 7'b000_0111;
+            32: ahb_burst_address_mask = 7'b000_0011;
+            16: ahb_burst_address_mask = 7'b000_0001;
+       default: ahb_burst_address_mask = 7'b000_0000;
+    endcase
+  endfunction : ahb_burst_address_mask
+
 endpackage
 
 
