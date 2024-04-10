@@ -376,7 +376,7 @@ import ahb3lite_pkg::*;
     //HADDR may not contain 'x' during transactions
     if (curr_htrans !== HTRANS_IDLE && ^HADDR === 1'bx)
     begin
-         ahb_error ("HTRANS undefined");
+         ahb_error ("HADDR undefined");
     end
   endtask : check_haddr
 
