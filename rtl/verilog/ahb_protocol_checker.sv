@@ -274,19 +274,19 @@ import ahb3lite_pkg::*;
    * Check HPROT
    */
   task check_hprot;
-    //HWRITE must remain stable during a burst
+    //HPROT must remain stable during a burst
     if (is_burst && !last_burst_beat && HPROT !== dly_hprot)
     begin
         ahb_error ("HPROT must remain stable during burst");
     end
 
-    //HWRITE must remain stable when slave not ready
+    //HPROT must remain stable when slave not ready
     if (!dly_hready && HPROT !== dly_hprot)
     begin
         ahb_error ("HPROT must remain stable during wait states");
     end
 
-    //HTRANS may not contain 'x' during transactions
+    //HPROT may not contain 'x' during transactions
     if (curr_htrans !== HTRANS_IDLE && ^HPROT === 1'bx)
     begin
         ahb_error("HPROT undefined");
