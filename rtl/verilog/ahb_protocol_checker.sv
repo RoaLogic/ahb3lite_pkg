@@ -78,7 +78,8 @@ import ahb3lite_pkg::*;
   logic [HBURST_SIZE-1:0] prev_hburst,
                           dly_hburst;
   logic [HPROT_SIZE -1:0] dly_hprot;
-  logic                   dly_hwrite;
+  logic                   prev_hwrite,
+                          dly_hwrite;
   logic                   dly_hmastlock;
   logic [HADDR_SIZE -1:0] prev_haddr,
                           dly_haddr;
@@ -90,7 +91,8 @@ import ahb3lite_pkg::*;
   integer                 burst_cnt,
                           watchdog_cnt;
 
-  integer                 errors = 0;
+  integer                 errors   = 0;
+  integer                 warnings = 0;
 
 
   //////////////////////////////////////////////////////////////////
@@ -130,8 +132,15 @@ import ahb3lite_pkg::*;
   task ahb_error;
     input string msg;
     
-    $error ("AHB ERROR (%m): %s @%0t", msg, $time);
+    $error   ("AHB ERROR   (%m): %s @%0t", msg, $time);
     errors++;
+  endtask : ahb_error
+
+  task ahb_warning;
+    input string msg;
+
+    $warning ("AHB WARNING (%m): %s @%0t", msg, $time);
+    warnings++;
   endtask : ahb_error
 
 
@@ -391,6 +400,12 @@ import ahb3lite_pkg::*;
     begin
         ahb_error ("HWDATA must remain stable during wait states");
     end
+
+    //HWDATA contains 'x'?
+    if (prev_htrans !== HTRANS_IDLE && prev_hwrite && ^HWDATA === 1'bx)
+    begin
+         ahb_warning ("HWDATA contains 'x'");
+    end
   endtask : check_hwdata
 
 
@@ -541,6 +556,9 @@ import ahb3lite_pkg::*;
   /*
    * Check HWRITE
    */
+  always @(posedge HCLK)
+    if (HREADY) prev_hwrite <= HWRITE;
+
   always @(posedge HCLK) dly_hwrite <= HWRITE;
   always @(posedge HCLK) check_hwrite();
 
@@ -566,7 +584,7 @@ import ahb3lite_pkg::*;
     if (WATCHDOG_TIMEOUT)
       if (~|watchdog_cnt)
       begin
-          $error ("AHB ERROR (%m): Watchdog expired @%0t", $time);
+          ahb_error ("Watchdog expired");
           
           if (STOP_ON_WATCHDOG) $stop();
       end
