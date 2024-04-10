@@ -311,7 +311,7 @@ import ahb3lite_pkg::*;
     end
 
     //HWRITE may not contain 'x' during transactions
-    if (curr_htrans !== HTRANS_IDLE && HWRITE === 1'bx)
+    if (curr_htrans !== HTRANS_IDLE && (HWRITE === 1'bx || HWRITE === 1'bz))
     begin
          $error ("AHB ERROR (%m): HWRITE undefined @%0t", $time);
     end
@@ -406,7 +406,7 @@ import ahb3lite_pkg::*;
     end
 
     //HREADY may not contain 'x'
-    if (HREADY === 1'bx)
+    if (HREADY === 1'bx || HREADY === 1'bz)
     begin
          ahb_error ("HREADY undefined");
     end
@@ -419,7 +419,7 @@ import ahb3lite_pkg::*;
     end
 
     //HRESP may not contain 'x'
-    if (HREADY && HRESP === 1'bx)
+    if (HREADY && (HRESP === 1'bx || HRESP === 1'bz))
     begin
          ahb_error ("HRESP undefined");
     end
