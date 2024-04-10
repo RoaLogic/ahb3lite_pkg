@@ -310,7 +310,7 @@ import ahb3lite_pkg::*;
         ahb_error ("HWRITE must remain stable during wait states");
     end
 
-    //HTRANS may not contain 'x' during transactions
+    //HWRITE may not contain 'x' during transactions
     if (curr_htrans !== HTRANS_IDLE && HWRITE === 1'bx)
     begin
          $error ("AHB ERROR (%m): HWRITE undefined @%0t", $time);
