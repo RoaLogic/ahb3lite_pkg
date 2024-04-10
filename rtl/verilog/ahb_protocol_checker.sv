@@ -106,6 +106,7 @@ import ahb3lite_pkg::*;
     $display (" |  |\\  \\ ' '-' '\\ '-'  |    |  '--.' '-' ' '-' ||  |\\ `--. ");
     $display (" `--' '--' `---'  `--`--'    `-----' `---' `-   /`--' `---' ");
     $display ("- AHB Protocol Checker ------------------  `---'  ----------");
+    $display ("- Instance: %m");
     $display ("------------------------------------------------------------");
     $display ("\n");
   endtask
@@ -557,9 +558,9 @@ import ahb3lite_pkg::*;
     * Watchdog
     */
   always @(posedge HCLK, negedge HRESETn)
-    if      (HRESETn) watchdog_cnt <= WATCHDOG_TIMEOUT;
-    else if (HREADY ) watchdog_cnt <= WATCHDOG_TIMEOUT;
-    else              watchdog_cnt <= watchdog_cnt -1'h1;
+    if      (!HRESETn) watchdog_cnt <= WATCHDOG_TIMEOUT;
+    else if ( HREADY ) watchdog_cnt <= WATCHDOG_TIMEOUT;
+    else               watchdog_cnt <= watchdog_cnt -1'h1;
 
   always @(posedge HCLK)
     if (WATCHDOG_TIMEOUT)
