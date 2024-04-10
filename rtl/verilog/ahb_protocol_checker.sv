@@ -313,7 +313,7 @@ import ahb3lite_pkg::*;
     //HWRITE may not contain 'x' during transactions
     if (curr_htrans !== HTRANS_IDLE && (HWRITE === 1'bx || HWRITE === 1'bz))
     begin
-         $error ("AHB ERROR (%m): HWRITE undefined @%0t", $time);
+         ahb_error ("HWRITE undefined");
     end
   endtask : check_hwrite
 
