@@ -93,7 +93,7 @@ module apb4_master_bfm
     input [PDATA_SIZE  -1:0] data,
     input [PDATA_SIZE/8-1:0] be
   );
-    //Address phase
+    //Setup phase
     PSEL    <= 1'b1;
     PENABLE <= 1'b0;
     PWRITE  <= 1'b1;
@@ -103,7 +103,7 @@ module apb4_master_bfm
     PWDATA  <= data;
     @(posedge PCLK);
 
-    //Data phase
+    //Access phase
     PENABLE <= 1'b1;
 
     do
@@ -122,7 +122,7 @@ module apb4_master_bfm
     input  [PADDR_SIZE-1:0] address,
     output [PDATA_SIZE-1:0] data
   );
-    //Address phase
+    //Setup phase
     PSEL    <= 1'b1;
     PENABLE <= 1'b0;
     PWRITE  <= 1'b0;
@@ -132,7 +132,7 @@ module apb4_master_bfm
     PWDATA  <= 'hx;
     @(posedge PCLK);
 
-    //Data phase
+    //Access phase
     PENABLE <= 1'b1;
 
     do @(posedge PCLK);
