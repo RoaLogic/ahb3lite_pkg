@@ -78,7 +78,8 @@ import ahb3lite_pkg::*;
   logic [HBURST_SIZE-1:0] prev_hburst,
                           dly_hburst;
   logic [HPROT_SIZE -1:0] dly_hprot;
-  logic                   dly_hwrite;
+  logic                   prev_hwrite,
+                          dly_hwrite;
   logic                   dly_hmastlock;
   logic [HADDR_SIZE -1:0] prev_haddr,
                           dly_haddr;
@@ -90,7 +91,26 @@ import ahb3lite_pkg::*;
   integer                 burst_cnt,
                           watchdog_cnt;
 
-  integer                 errors = 0;
+  integer                 errors   = 0;
+  integer                 warnings = 0;
+
+
+  //////////////////////////////////////////////////////////////////
+  //
+  // Functions
+  //
+  function automatic [HADDR_SIZE-1:0] hsize2adrmask (input [HSIZE_SIZE-1:0] hsize);
+    case (hsize)
+      HSIZE_B8   : hsize2adrmask = {HADDR_SIZE{1'b1}};
+      HSIZE_B16  : hsize2adrmask = {HADDR_SIZE{1'b1}} << 1;
+      HSIZE_B32  : hsize2adrmask = {HADDR_SIZE{1'b1}} << 2;
+      HSIZE_B64  : hsize2adrmask = {HADDR_SIZE{1'b1}} << 3;
+      HSIZE_B128 : hsize2adrmask = {HADDR_SIZE{1'b1}} << 4;
+      HSIZE_B256 : hsize2adrmask = {HADDR_SIZE{1'b1}} << 5;
+      HSIZE_B512 : hsize2adrmask = {HADDR_SIZE{1'b1}} << 6;
+      HSIZE_B1024: hsize2adrmask = {HADDR_SIZE{1'b1}} << 7;
+    endcase
+  endfunction : hsize2adrmask
 
 
   //////////////////////////////////////////////////////////////////
@@ -130,9 +150,16 @@ import ahb3lite_pkg::*;
   task ahb_error;
     input string msg;
     
-    $error ("AHB ERROR (%m): %s @%0t", msg, $time);
+    $error   ("AHB ERROR   (%m): %s @%0t", msg, $time);
     errors++;
   endtask : ahb_error
+
+  task ahb_warning;
+    input string msg;
+
+    $warning ("AHB WARNING (%m): %s @%0t", msg, $time);
+    warnings++;
+  endtask : ahb_warning
 
 
   /*
@@ -274,19 +301,19 @@ import ahb3lite_pkg::*;
    * Check HPROT
    */
   task check_hprot;
-    //HWRITE must remain stable during a burst
+    //HPROT must remain stable during a burst
     if (is_burst && !last_burst_beat && HPROT !== dly_hprot)
     begin
         ahb_error ("HPROT must remain stable during burst");
     end
 
-    //HWRITE must remain stable when slave not ready
+    //HPROT must remain stable when slave not ready
     if (!dly_hready && HPROT !== dly_hprot)
     begin
         ahb_error ("HPROT must remain stable during wait states");
     end
 
-    //HTRANS may not contain 'x' during transactions
+    //HPROT may not contain 'x' during transactions
     if (curr_htrans !== HTRANS_IDLE && ^HPROT === 1'bx)
     begin
         ahb_error("HPROT undefined");
@@ -310,10 +337,10 @@ import ahb3lite_pkg::*;
         ahb_error ("HWRITE must remain stable during wait states");
     end
 
-    //HTRANS may not contain 'x' during transactions
-    if (curr_htrans !== HTRANS_IDLE && HWRITE === 1'bx)
+    //HWRITE may not contain 'x' during transactions
+    if (curr_htrans !== HTRANS_IDLE && (HWRITE === 1'bx || HWRITE === 1'bz))
     begin
-         $error ("AHB ERROR (%m): HWRITE undefined @%0t", $time);
+         ahb_error ("HWRITE undefined");
     end
   endtask : check_hwrite
 
@@ -327,6 +354,12 @@ import ahb3lite_pkg::*;
     logic incr_haddr;
     logic [HADDR_SIZE-1:0] norm_addr,
                            nxt_addr;
+
+    //HADDR should be an HSIZE aligned address
+    if (HADDR & ~hsize2adrmask(HSIZE) != 0)
+    begin
+        ahb_error ("HADDR not aligned with HSIZE");
+    end
 
     //normalize address
     case (prev_hsize)
@@ -376,7 +409,7 @@ import ahb3lite_pkg::*;
     //HADDR may not contain 'x' during transactions
     if (curr_htrans !== HTRANS_IDLE && ^HADDR === 1'bx)
     begin
-         ahb_error ("HTRANS undefined");
+         ahb_error ("HADDR undefined");
     end
   endtask : check_haddr
 
@@ -390,6 +423,12 @@ import ahb3lite_pkg::*;
     if (!dly_hready && dly_hwrite && HWDATA !== dly_hwdata)
     begin
         ahb_error ("HWDATA must remain stable during wait states");
+    end
+
+    //HWDATA contains 'x'?
+    if (prev_htrans !== HTRANS_IDLE && prev_hwrite && ^HWDATA === 1'bx)
+    begin
+         ahb_warning ("HWDATA contains 'x'");
     end
   endtask : check_hwdata
 
@@ -406,7 +445,7 @@ import ahb3lite_pkg::*;
     end
 
     //HREADY may not contain 'x'
-    if (HREADY === 1'bx)
+    if (HREADY === 1'bx || HREADY === 1'bz)
     begin
          ahb_error ("HREADY undefined");
     end
@@ -419,7 +458,7 @@ import ahb3lite_pkg::*;
     end
 
     //HRESP may not contain 'x'
-    if (HREADY && HRESP === 1'bx)
+    if (HREADY && (HRESP === 1'bx || HRESP === 1'bz))
     begin
          ahb_error ("HRESP undefined");
     end
@@ -541,6 +580,9 @@ import ahb3lite_pkg::*;
   /*
    * Check HWRITE
    */
+  always @(posedge HCLK)
+    if (HREADY) prev_hwrite <= HWRITE;
+
   always @(posedge HCLK) dly_hwrite <= HWRITE;
   always @(posedge HCLK) check_hwrite();
 
@@ -566,7 +608,7 @@ import ahb3lite_pkg::*;
     if (WATCHDOG_TIMEOUT)
       if (~|watchdog_cnt)
       begin
-          $error ("AHB ERROR (%m): Watchdog expired @%0t", $time);
+          ahb_error ("Watchdog expired");
           
           if (STOP_ON_WATCHDOG) $stop();
       end
