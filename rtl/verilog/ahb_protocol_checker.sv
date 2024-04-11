@@ -113,6 +113,28 @@ import ahb3lite_pkg::*;
   endfunction : hsize2adrmask
 
 
+  function automatic [HDATA_SIZE-1:0] datamask (
+    input [HADDR_SIZE-1:0] haddr,
+    input [HSIZE_SIZE-1:0] hsize
+  );
+    int offset;
+
+    offset = 8 * haddr[0 +: $clog2(HDATA_SIZE/8)];
+
+    datamask = {HDATA_SIZE{1'b0}};
+    case (hsize)
+      HSIZE_B8   : datamask |= {   8{1'b1}} << offset;
+      HSIZE_B16  : datamask |= {  16{1'b1}} << offset;
+      HSIZE_B32  : datamask |= {  32{1'b1}} << offset;
+      HSIZE_B64  : datamask |= {  64{1'b1}} << offset;
+      HSIZE_B128 : datamask |= { 128{1'b1}} << offset;
+      HSIZE_B256 : datamask |= { 256{1'b1}} << offset;
+      HSIZE_B512 : datamask |= { 512{1'b1}} << offset;
+      HSIZE_B1024: datamask |= {1024{1'b1}} << offset;
+    endcase
+  endfunction : datamask
+
+
   //////////////////////////////////////////////////////////////////
   //
   // Tasks
@@ -356,7 +378,7 @@ import ahb3lite_pkg::*;
                            nxt_addr;
 
     //HADDR should be an HSIZE aligned address
-    if (HADDR & ~hsize2adrmask(HSIZE) != 0)
+    if (curr_htrans !== HTRANS_IDLE && |(HADDR & ~hsize2adrmask(HSIZE)))
     begin
         ahb_error ("HADDR not aligned with HSIZE");
     end
@@ -426,10 +448,12 @@ import ahb3lite_pkg::*;
     end
 
     //HWDATA contains 'x'?
-    if (prev_htrans !== HTRANS_IDLE && prev_hwrite && ^HWDATA === 1'bx)
+    if (prev_htrans !== HTRANS_IDLE && prev_hwrite &&
+        ^(HWDATA & datamask(prev_haddr, prev_hsize) === 1'bx))
     begin
          ahb_warning ("HWDATA contains 'x'");
     end
+
   endtask : check_hwdata
 
 
