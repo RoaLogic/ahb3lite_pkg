@@ -97,6 +97,24 @@ import ahb3lite_pkg::*;
 
   //////////////////////////////////////////////////////////////////
   //
+  // Functions
+  //
+  function automatic [HADDR_SIZE-1:0] hsize2adrmask (input [HSIZE_SIZE-1:0] hsize);
+    case (hsize)
+      HSIZE_B8   : hsize2adrmask = {HADDR_SIZE{1'b1}};
+      HSIZE_B16  : hsize2adrmask = {HADDR_SIZE{1'b1}} << 1;
+      HSIZE_B32  : hsize2adrmask = {HADDR_SIZE{1'b1}} << 2;
+      HSIZE_B64  : hsize2adrmask = {HADDR_SIZE{1'b1}} << 3;
+      HSIZE_B128 : hsize2adrmask = {HADDR_SIZE{1'b1}} << 4;
+      HSIZE_B256 : hsize2adrmask = {HADDR_SIZE{1'b1}} << 5;
+      HSIZE_B512 : hsize2adrmask = {HADDR_SIZE{1'b1}} << 6;
+      HSIZE_B1024: hsize2adrmask = {HADDR_SIZE{1'b1}} << 7;
+    endcase
+  endfunction : hsize2adrmask
+
+
+  //////////////////////////////////////////////////////////////////
+  //
   // Tasks
   //
   task welcome_msg();
@@ -141,7 +159,7 @@ import ahb3lite_pkg::*;
 
     $warning ("AHB WARNING (%m): %s @%0t", msg, $time);
     warnings++;
-  endtask : ahb_error
+  endtask : ahb_warning
 
 
   /*
@@ -336,6 +354,12 @@ import ahb3lite_pkg::*;
     logic incr_haddr;
     logic [HADDR_SIZE-1:0] norm_addr,
                            nxt_addr;
+
+    //HADDR should be an HSIZE aligned address
+    if (HADDR & ~hsize2adrmask(HSIZE) != 0)
+    begin
+        ahb_error ("HADDR not aligned with HSIZE");
+    end
 
     //normalize address
     case (prev_hsize)
