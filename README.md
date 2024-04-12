@@ -1,4 +1,4 @@
-Support modules and packages for AMBA AHB and APB
+Collection of support modules and packages for AMBA AHB and APB
 
 Included:
 - ahb3lite package. Contains definitions and functions to support AHB protocol. Used by most RoaLogic IP
