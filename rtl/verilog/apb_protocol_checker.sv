@@ -69,25 +69,179 @@ import ahb3lite_pkg::*;
   //
   // Variables
   //
-  logic                    setup_phase,
-                           access_phase;
-  logic                    dly_psel;
-  logic                    dly_penable;
-  logic [PADDR_SIZE  -1:0] dly_paddr;
-  logic                    dly_pwrite;
-  logic [PDATA_SIZE/8-1:0] dly_pstrb;
-  logic [HPROT_SIZE  -1:0] dly_pprot;
-  logic [PDATA_SIZE  -1:0] dly_pwdata;
-  logic                    dly_pready;
+  localparam             PSTRB_SIZE = (PDATA_SIZE+7)/8;
 
-  integer                  watchdog_cnt;
-  integer                  errors   = 0;
-  integer                  warnings = 0;
+  logic                  setup_phase,
+                         access_phase;
+  logic                  dly_psel;
+  logic                  dly_penable;
+  logic [PADDR_SIZE-1:0] dly_paddr;
+  logic                  dly_pwrite;
+  logic [PSTRB_SIZE-1:0] dly_pstrb;
+  logic [HPROT_SIZE-1:0] dly_pprot;
+  logic [PDATA_SIZE-1:0] dly_pwdata;
+  logic                  dly_pready;
+
+  int                    watchdog_cnt = WATCHDOG_TIMEOUT;
+  int                    errors   = 0;
+  int                    warnings = 0;
+  int                    infos    = 0;
 
 
   //////////////////////////////////////////////////////////////////
   //
-  // Tasks
+  // Message Structure
+  //
+  localparam int MESSAGE_COUNT   = 23;
+
+  typedef enum int {OFF    =0,
+                    INFO   =1,
+                    WARNING=2,
+                    ERROR  =3,
+                    FATAL  =4} severity_t;
+
+  typedef struct {
+    severity_t severity;
+    string     message;
+  } message_t;
+
+  message_t _msg[MESSAGE_COUNT];
+
+
+  //Default values
+  initial
+  begin
+      _msg[ 0] = '{ERROR  , "PSEL must remain high for the entire transfer"};
+      _msg[ 1] = '{ERROR  , "PSEL undefined"};
+      _msg[ 2] = '{ERROR  , "PENABLE must be low during Setup phase"};
+      _msg[ 3] = '{ERROR  , "PENABLE must be high during Access phase"};
+      _msg[ 4] = '{ERROR  , "PENABLE undefined"};
+      _msg[ 5] = '{ERROR  , "PADDR must remain stable for the entire transfer"};
+      _msg[ 6] = '{ERROR  , "PADDR vs PSTRB misaligned"};
+      _msg[ 7] = '{ERROR  , "Misaligned PADDR"};
+      _msg[ 8] = '{ERROR  , "PADDR undefined"};
+      _msg[ 9] = '{ERROR  , "PWRITE must remain stable for the entire transfer"};
+      _msg[10] = '{ERROR  , "PWRITE undefined"};
+      _msg[11] = '{WARNING, "PSTRB value non byte/word/dword/..."};
+      _msg[12] = '{ERROR  , "PSTRB must remain stable for the entire transfer"};
+      _msg[13] = '{ERROR  , "PSTRB undefined"};
+      _msg[14] = '{ERROR  , "PPROT must remain stable for the entire transfer"};
+      _msg[15] = '{ERROR  , "PPROT undefined"};
+      _msg[16] = '{ERROR  , "PWDATA must remain stable during wait states"};
+      _msg[17] = '{WARNING, "PWDATA contains 'x'"};
+      _msg[18] = '{WARNING, "PWDATA contains 'x'"};
+      _msg[19] = '{WARNING, "PRDATA contains 'x'"};
+      _msg[20] = '{ERROR  , "PREADY undefined during Access phase"};
+      _msg[21] = '{ERROR  , "PSLVERR undefined"};
+      _msg[22] = '{FATAL  , "Watchdog expired"};
+  end
+
+
+  //Display message
+  task automatic message (input int msg_no);
+    severity_t msg_severity;
+    string     msg;
+
+    msg_severity = _msg[msg_no].severity;
+    msg          = $sformatf ("APB-%0d %s (%m): %s @%0t", msg_no, msg_severity.name(), _msg[msg_no].message, $time);
+
+    case (msg_severity)
+      OFF    : ;
+      INFO   : $info    (msg);
+      WARNING: $warning (msg);
+      ERROR  : $error   (msg);
+      FATAL  : begin $display("%0d", msg_no); $fatal   (msg); end
+    endcase
+
+    case (msg_severity)
+      OFF    : ;
+      INFO   : infos++;
+      WARNING: warnings++;
+      ERROR  : errors++;
+      FATAL  : ;
+    endcase
+  endtask : message
+
+
+  //Set severity level of a message/check
+  task set_severity(int msg_no, severity_t severity);
+    if (msg_no < MESSAGE_COUNT)
+      _msg[msg_no].severity = severity;
+  endtask : set_severity
+
+  //Get severity level of a message/check
+  function severity_t get_severity(int msg_no);
+    if (msg_no < MESSAGE_COUNT)
+      return _msg[msg_no].severity;
+  endfunction : get_severity
+
+
+  //////////////////////////////////////////////////////////////////
+  //
+  // Functions
+  //
+
+  //Check if PSTRB has a 'logical' structure. Meaning:
+  //1 PSTRB for byte access and in the form of 'h8, 'h4, 'h2, 'h1
+  //2 PSTRB's for hword access and in the form of 'hc0, 'hc0, 'h0c, 'h03
+  //4 PSTRB's for word access and in the form of 'hf000, 'h0f00, 'h00f0, 'h000f
+  //etc
+  function pstrb_valid(
+    input [PSTRB_SIZE-1:0] pstrb
+  );
+    logic [PSTRB_SIZE-1:0] mask;
+ 
+    pstrb_valid = 0;
+
+    //create all possible valid/logic PSTRB combinations and check against them
+    for (int size  =0; size   <= $clog2(PSTRB_SIZE)  ; size++  )
+    for (int offset=0; offset <  PSTRB_SIZE/(2**size); offset++)
+    begin
+        mask         = ((PSTRB_SIZE'(1) << (PSTRB_SIZE'(1) << size)) -1'h1) << (offset << size);
+        pstrb_valid |= (pstrb & mask) == pstrb;
+    end
+  endfunction : pstrb_valid
+
+
+  //Check if PSTRB is aligned with PADDR (or vice versa)
+  function pstrb_misaligned(
+    input [PADDR_SIZE-1:0] paddr,
+    input [PSTRB_SIZE-1:0] pstrb
+  );
+    int                    tr_size;
+    logic [PSTRB_SIZE-1:0] mask;
+    logic [PADDR_SIZE-1:0] addr_mask,
+                           masked_addr;
+
+    tr_size = -1;
+
+    //Determine the size of the transaction based on PSTRB value
+    //0 = byte  ( 8bits)
+    //1 = hword (16bits)
+    //2 = word  (32bits)
+    //etc
+    for (int size  =0; size   <= $clog2(PSTRB_SIZE)  ; size++  )
+    for (int offset=0; offset <  PSTRB_SIZE/(2**size); offset++)
+    begin
+        mask = ((PSTRB_SIZE'(1) << (PSTRB_SIZE'(1) << size)) -1'h1) << (offset << size);
+        if (pstrb == mask)
+        begin
+            tr_size = size;
+            break;
+        end
+    end
+
+    addr_mask   = {PADDR_SIZE{1'b1}} << tr_size;
+    masked_addr = paddr & ~addr_mask;
+
+    pstrb_misaligned = |masked_addr;
+  endfunction : pstrb_misaligned
+
+
+
+  //////////////////////////////////////////////////////////////////
+  //
+  // Welcome/Goodbye Tasks
   //
   task welcome_msg();
     $display("\n\n");
@@ -113,27 +267,21 @@ import ahb3lite_pkg::*;
     $display (" |  |\\  \\ ' '-' '\\ '-'  |    |  '--.' '-' ' '-' ||  |\\ `--. ");
     $display (" `--' '--' `---'  `--`--'    `-----' `---' `-   /`--' `---' ");
     $display ("- APB Protocol Checker ------------------  `---'  ----------");
+    $display ("- Instance: %m");
     $display ("------------------------------------------------------------");
-    $display ("  Errors: %0d", errors);
+    $display ("- Info    : %0d", infos);
+    $display ("- Warnings: %0d", warnings);
+    $display ("- Errors  : %0d", errors);
     $display ("------------------------------------------------------------");
   endtask
 
-
-  task apb_error;
-    input string msg;
-    
-    $error   ("APB ERROR   (%m): %s @%0t", msg, $time);
-    errors++;
-  endtask : apb_error
+  initial welcome_msg();
 
 
-  task apb_warning;
-    input string msg;
-    
-    $warning ("APB WARNING (%m): %s @%0t", msg, $time);
-    warnings++;
-  endtask : apb_warning
-
+  //////////////////////////////////////////////////////////////////
+  //
+  // Tasks / Checks
+  //
 
   /*
    * Check PSEL
@@ -141,13 +289,12 @@ import ahb3lite_pkg::*;
   task check_psel;
     //PSEL can only go low if the current transfer ended
     if (!PSEL && dly_psel)
-        if (!dly_pready) apb_error ("PSEL must remain high for the entire transfer");
+      if (!dly_pready)
+        message(0);
 
     //PSEL must not be undefined
     if (PSEL === 1'bx)
-    begin
-         apb_error ("PSEL undefined");
-    end
+      message(1);
   endtask : check_psel
 
 
@@ -157,17 +304,17 @@ import ahb3lite_pkg::*;
   task check_penable;
     //PENABLE must be low during Setup phase
     if (setup_phase)
-      if (PENABLE) apb_error ("PENABLE must be low during Setup phase");
+      if (PENABLE)
+        message(2);
 
     //PENABLE must be high during Access phase
     if (access_phase)
-      if (!PENABLE) apb_error ("PENABLE must be high during Access phase");
+      if (!PENABLE)
+        message(3);
 
     //PENABLE must not be undefined during transfer
     if (PSEL && (PENABLE === 1'bx || PENABLE == 1'bz))
-    begin
-         apb_error ("PENABLE undefined");
-    end
+      message(4);
   endtask : check_penable
 
 
@@ -175,17 +322,30 @@ import ahb3lite_pkg::*;
    * Check PADDR
    */
   task check_paddr;
+    logic [PADDR_SIZE-1:0] addr_mask, masked_addr;
+
     //PADDR must remain stable during entire transfer
-    if (PSEL && !dly_pready && PADDR !== dly_paddr)
-    begin
-        apb_error ("PADDR must remain stable for the entire transfer");
-    end
+    if (!dly_pready && PADDR !== dly_paddr)
+      message(5);
+
+    //PADDR must align with PSTRB
+    if (CHECK_PSTRB)
+      if (PWRITE)
+      begin
+          if (pstrb_misaligned(PADDR, PSTRB))
+            message(6);
+      end
+      else
+      begin
+          addr_mask   = {PADDR_SIZE{1'b1}} << $clog2(PSTRB_SIZE);
+          masked_addr = PADDR & ~addr_mask;
+          if (|masked_addr)
+            message(7);
+      end
 
     //PADDR may not be undefined during transfer
-    if (PSEL && ^PADDR === 1'bx)
-    begin
-         apb_error ("PADDR undefined");
-    end
+    if (^PADDR === 1'bx)
+      message(8);
   endtask : check_paddr
 
 
@@ -194,16 +354,12 @@ import ahb3lite_pkg::*;
    */
   task check_pwrite;
     //HWRITE must remain stable during a burst
-    if (PSEL && !dly_pready && PWRITE !== dly_pwrite)
-    begin
-        apb_error ("PWRITE must remain stable for the entire transfer");
-    end
+    if (!dly_pready && PWRITE !== dly_pwrite)
+      message(9);
 
     //PWRITE may not be undefined during transfer
-    if (PSEL && (PWRITE === 1'bx || PWRITE === 1'bz))
-    begin
-         apb_error ("PWRITE undefined");
-    end
+    if (PWRITE === 1'bx || PWRITE === 1'bz)
+      message(10);
   endtask : check_pwrite
 
 
@@ -211,17 +367,19 @@ import ahb3lite_pkg::*;
    * Check PSTRB
    */
   task check_pstrb;
+    //PSTRB valid?
+    if (|PSTRB)
+      if (~pstrb_valid(PSTRB))
+        message(11);
+
+
     //PSTRB must remain stable during entire transfer
-    if (PSEL && !dly_pready && PSTRB !== dly_pstrb)
-    begin
-        apb_error ("PSTRB must remain stable for the entire transfer");
-    end
+    if (!dly_pready && PSTRB !== dly_pstrb)
+      message(12);
 
     //PSTRB may not be undefined during transfer
-    if (PSEL && PWRITE && ^PSTRB === 1'bx)
-    begin
-         apb_error ("PSTRB undefined");
-    end
+    if (PWRITE && ^PSTRB === 1'bx)
+      message(13);
   endtask : check_pstrb
 
 
@@ -230,16 +388,12 @@ import ahb3lite_pkg::*;
    */
   task check_pprot;
     //PPROT must remain stable during entire transfer
-    if (PSEL && !dly_pready && PPROT !== dly_pprot)
-    begin
-        apb_error ("PPROT must remain stable for the entire transfer");
-    end
+    if (!dly_pready && PPROT !== dly_pprot)
+      message(14);
 
     //PPROT may not be undefined during transfer
-    if (PSEL && ^PPROT === 1'bx)
-    begin
-         apb_error ("PPROT undefined");
-    end
+    if (^PPROT === 1'bx)
+      message(15);
   endtask : check_pprot
   
 
@@ -247,16 +401,30 @@ import ahb3lite_pkg::*;
    * Check PWDATA
    */
   task check_pwdata;
+    logic is_x;
+
     //PWDATA must remain stable during entire transfer
-    if (PSEL && !dly_pready && PWDATA !== dly_pwdata)
-    begin
-        apb_error ("PWDATA must remain stable during wait states");
-    end
+    if (!dly_pready && PWDATA !== dly_pwdata)
+      message(16);
 
     //PWDATA undefined?
-    if (PSEL && PWRITE && ^PWDATA === 1'bx)
+    if (CHECK_PSTRB)
     begin
-         apb_warning ("PWDATA contains 'x'");
+        if (PWRITE)
+        begin
+            is_x = 1'b0;
+
+            foreach (PSTRB[i])
+              is_x |= (^PWDATA[i*8 +: 8] & PSTRB[i]) === 1'bx;
+
+            if (is_x)
+              message(17);
+        end
+    end
+    else
+    begin
+        if (PWRITE && ^PWDATA === 1'bx)
+          message(18);
     end
   endtask : check_pwdata
 
@@ -266,8 +434,9 @@ import ahb3lite_pkg::*;
    */
   task check_prdata;
     //PRDATA undefined when transfer completes?
-    if (PSEL && PENABLE && PREADY)
-      if (^PRDATA === 1'bx) apb_warning ("PRDATA contains 'x'");
+    if (PENABLE && PREADY)
+      if (^PRDATA === 1'bx)
+        message(19);
   endtask : check_prdata
 
 
@@ -276,10 +445,8 @@ import ahb3lite_pkg::*;
    */
   task check_pready;
     //PREADY may not contain 'x' when PENABLE is high
-    if (PENABLE && (PREADY === 1'bx || PENABLE === 1'bz))
-    begin
-         apb_error ("PREADY undefined during Access phase");
-    end
+    if (PENABLE && (PREADY === 1'bx || PREADY === 1'bz))
+      message(20);
   endtask : check_pready
 
 
@@ -288,8 +455,9 @@ import ahb3lite_pkg::*;
    */
   task check_pslverr;
     //PSLVERR may not be undefined when transfer completes
-    if (PSEL && PENABLE && PREADY)
-      if (PSLVERR === 1'bx || PSLVERR === 1'bz) apb_error ("PSLVERR undefined");
+    if (PENABLE && PREADY)
+      if (PSLVERR === 1'bx || PSLVERR === 1'bz)
+        message(21);
   endtask : check_pslverr
 
 
@@ -332,54 +500,54 @@ import ahb3lite_pkg::*;
    * Check PADDR
    */
   always @(posedge PCLK) dly_paddr <= PADDR;
-  always @(posedge PCLK) check_paddr();
+  always @(posedge PCLK) if (PSEL) check_paddr();
 
 
   /*
    * Check PWRITE
    */
   always @(posedge PCLK) dly_pwrite <= PWRITE;
-  always @(posedge PCLK) check_pwrite();
+  always @(posedge PCLK) if (PSEL) check_pwrite();
 
 
   /*
    * Check PSTRB
    */
   always @(posedge PCLK) if (CHECK_PSTRB) dly_pstrb <= PSTRB;
-  always @(posedge PCLK) if (CHECK_PSTRB) check_pstrb();
+  always @(posedge PCLK) if (CHECK_PSTRB) if (PSEL) check_pstrb();
 
 
   /*
    * Check PPROT
    */
   always @(posedge PCLK) if (CHECK_PPROT) dly_pprot <= PPROT;
-  always @(posedge PCLK) if (CHECK_PPROT) check_pprot();
+  always @(posedge PCLK) if (CHECK_PPROT) if (PSEL) check_pprot();
   
 
   /*
    * Check PWDATA
    */
   always @(posedge PCLK) dly_pwdata <= PWDATA;
-  always @(posedge PCLK) check_pwdata();
+  always @(posedge PCLK) if (PSEL) check_pwdata();
 
 
   /*
    * Check PRDATA
    */
-  always @(posedge PCLK) check_prdata();
+  always @(posedge PCLK) if (PSEL) check_prdata();
 
 
   /*
    * Check PREADY
    */
   always @(posedge PCLK) dly_pready <= PREADY;
-  always @(posedge PCLK) check_pready();
+  always @(posedge PCLK) if (PSEL) check_pready();
 
 
   /*
    * Check PSLVERR
    */
-  always @(posedge PCLK) if (CHECK_PSLVERR) check_pslverr();
+  always @(posedge PCLK) if (CHECK_PSLVERR) if (PSEL) check_pslverr();
 
 
    /*
@@ -395,10 +563,6 @@ import ahb3lite_pkg::*;
   always @(posedge PCLK)
     if (WATCHDOG_TIMEOUT)
       if (~|watchdog_cnt)
-      begin
-          apb_error ("Watchdog expired");
-          
-          if (STOP_ON_WATCHDOG) $stop();
-      end
+        message(22);
 endmodule : apb_protocol_checker
 
