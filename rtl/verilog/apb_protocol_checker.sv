@@ -32,60 +32,122 @@
 /////////////////////////////////////////////////////////////////////
 
 
+/*
+ * APB Revisions:                      CommonRef  Status    Changes
+ *-------------------------------------------------------------
+ * APB Specification Rev E    APB                 obsolete
+ * AMBA 2 APB Specification (Issue A)  APB2       active
+ * AMBA 3 APB Specification (ISSUE B)  APB3       active    PREADY
+ *                                                          PSLVERR
+ * AMBA APB Specification (ISSUE C)    APB4       active    PPROT
+ *                                                          PSTRB
+ * AMBA APB Specification (ISSUE D)    APB5       active    PWAKEUP
+ *                                                          PAUSER
+ *                                                          PWUSER
+ *                                                          PRUSER
+ *                                                          PBUSER
+ *
+ * The checker use the following defines to specify the ABP version
+ * APB_VERSION_APB2
+ * APB_VERSION_APB3
+ * APB_VERSION_APB4
+ * APB_VERSION_APB5
+ */
+
+
+//APB5 implies APB4 and below
+`ifdef APB_VERSION_APB5
+    `ifndef APB_VERSION_APB4
+        `define APB_VERSION_APB4
+    `endif
+`endif
+
+
+//APB4 implies APB3 and below
+`ifdef APB_VERSION_APB4
+    `ifndef APB_VERSION_APB3
+        `define APB_VERSION_APB3
+    `endif
+`endif
+
+
 module apb_protocol_checker
 import ahb3lite_pkg::*;
 #(
-  parameter PADDR_SIZE       = 32,       //HADDR bus width
-  parameter PDATA_SIZE       = 32,       //HDATA bus width
+  parameter int ADDR_WIDTH       = 32,       //PADDR bus width
+  parameter int DATA_WIDTH       = 32,       //PRDATA/PWDATA bus width
 
-  parameter CHECK_PSTRB      = 1,        //1: check PSTRB signal
-                                         //0: do not check PSTRB signal
-  parameter CHECK_PPROT      = 1,        //1: check PPROT signal
-                                         //0: do not check PPROT signal
-  parameter CHECK_PSLVERR    = 1,        //1: check PSLVERR signal
-                                         //0: do not check PSLVERR signal
-  parameter WATCHDOG_TIMEOUT = 128,      //number of cycles before watchdog triggers
-                                         //WATCHDOG_TIMEOUT==0 disables watchdog
-  parameter STOP_ON_WATCHDOG = 1         //1: stop simulation if watchdog triggers
-                                         //0: do not stop simulation if watchdog triggers
+  parameter int USER_REQ_WIDTH   = 0,
+  parameter int USER_DATA_WIDTH  = 0,
+  parameter int USER_RESP_WIDTH  = 0,
+
+  parameter int CHECK_PSTRB      = 1,        //1: check PSTRB signal
+                                             //0: do not check PSTRB signal
+  parameter int CHECK_PPROT      = 1,        //1: check PPROT signal
+                                             //0: do not check PPROT signal
+  parameter int CHECK_PSLVERR    = 1,        //1: check PSLVERR signal
+                                             //0: do not check PSLVERR signal
+  parameter int WATCHDOG_TIMEOUT = 128       //number of cycles before watchdog triggers
+                                             //WATCHDOG_TIMEOUT==0 disables watchdog
 )
 (
   //AHB Interface
-  input                    PRESETn,
-  input                    PCLK,
+  input                        PRESETn,
+  input                        PCLK,
 
-  input                    PSEL,
-  input                    PENABLE,
-  input [PADDR_SIZE  -1:0] PADDR,
-  input                    PWRITE,
-  input [PDATA_SIZE/8-1:0] PSTRB,
-  input [             2:0] PPROT,
-  input [PDATA_SIZE  -1:0] PWDATA,
-  input [PDATA_SIZE  -1:0] PRDATA,
-  input                    PREADY,
-  input                    PSLVERR
+  input                        PSEL,
+  input                        PENABLE,
+  input [ADDR_WIDTH      -1:0] PADDR,
+  input                        PWRITE,
+`ifdef APB_VERSION_APB4
+  input [(DATA_WIDTH+7)/8-1:0] PSTRB,
+  input [                 2:0] PPROT,
+`endif
+  input [DATA_WIDTH      -1:0] PWDATA,
+  input [DATA_WIDTH      -1:0] PRDATA
+
+`ifdef APB_VERSION_APB3
+  ,
+  input                        PREADY,
+  input                        PSLVERR
+`endif
+
+`ifdef APB_VERSION_APB5
+  ,
+  input                        PWAKEUP,
+  input [USER_REQ_WIDTH  -1:0] PAUSER,
+  input [USER_DATA_WIDTH -1:0] PRUSER,
+                               PWUSER,
+  input [USER_RESP_WIDTH -1:0] PBUSER
+`endif
 );
   //////////////////////////////////////////////////////////////////
   //
   // Variables
   //
-  localparam             PSTRB_SIZE = (PDATA_SIZE+7)/8;
+  localparam                  PSTRB_SIZE = (DATA_WIDTH+7)/8;
 
-  logic                  setup_phase,
-                         access_phase;
-  logic                  dly_psel;
-  logic                  dly_penable;
-  logic [PADDR_SIZE-1:0] dly_paddr;
-  logic                  dly_pwrite;
-  logic [PSTRB_SIZE-1:0] dly_pstrb;
-  logic [HPROT_SIZE-1:0] dly_pprot;
-  logic [PDATA_SIZE-1:0] dly_pwdata;
-  logic                  dly_pready;
+  logic                       setup_phase,
+                              access_phase;
+  logic                       dly_psel;
+  logic                       dly_penable;
+  logic [ADDR_WIDTH     -1:0] dly_paddr;
+  logic                       dly_pwrite;
+  logic [PSTRB_SIZE     -1:0] dly_pstrb;
+  logic [                2:0] dly_pprot;
+  logic [DATA_WIDTH     -1:0] dly_pwdata;
+  logic                       dly_pready;
+  logic                       dly_pwakeup;
+  logic [USER_REQ_WIDTH -1:0] dly_pauser;
+  logic [USER_DATA_WIDTH-1:0] dly_pwuser,
+                              dly_pruser;
+  logic [USER_RESP_WIDTH-1:0] dly_pbuser;
 
-  int                    watchdog_cnt = WATCHDOG_TIMEOUT;
-  int                    errors   = 0;
-  int                    warnings = 0;
-  int                    infos    = 0;
+
+  int                         watchdog_cnt = WATCHDOG_TIMEOUT;
+  int                         errors   = 0;
+  int                         warnings = 0;
+  int                         infos    = 0;
 
 
   //////////////////////////////////////////////////////////////////
@@ -118,22 +180,74 @@ import ahb3lite_pkg::*;
       _msg[ 4] = '{ERROR  , "PENABLE undefined"};
       _msg[ 5] = '{ERROR  , "PADDR must remain stable for the entire transfer"};
       _msg[ 6] = '{ERROR  , "PADDR vs PSTRB misaligned"};
-      _msg[ 7] = '{ERROR  , "Misaligned PADDR"};
+      _msg[38] = '{WARNING, "PADDR should be max 32 bits"};
+      _msg[ 7] = '{ERROR  , "PADDR should be aligned to DATA_WIDTH"};
       _msg[ 8] = '{ERROR  , "PADDR undefined"};
       _msg[ 9] = '{ERROR  , "PWRITE must remain stable for the entire transfer"};
       _msg[10] = '{ERROR  , "PWRITE undefined"};
       _msg[11] = '{WARNING, "PSTRB value non byte/word/dword/..."};
       _msg[12] = '{ERROR  , "PSTRB must remain stable for the entire transfer"};
       _msg[13] = '{ERROR  , "PSTRB undefined"};
+      _msg[33] = '{ERROR  , "PSTRB must be low during read transfer"};
       _msg[14] = '{ERROR  , "PPROT must remain stable for the entire transfer"};
       _msg[15] = '{ERROR  , "PPROT undefined"};
       _msg[16] = '{ERROR  , "PWDATA must remain stable during wait states"};
       _msg[17] = '{WARNING, "PWDATA contains 'x'"};
       _msg[18] = '{WARNING, "PWDATA contains 'x'"};
+      _msg[39] = '{WARNING, "PWDATA should be 8, 16, or 32 bits wide"};
       _msg[19] = '{WARNING, "PRDATA contains 'x'"};
+      _msg[40] = '{WARNING, "PRDATA should be 8, 16, or 32 bits wide"};
       _msg[20] = '{ERROR  , "PREADY undefined during Access phase"};
       _msg[21] = '{ERROR  , "PSLVERR undefined"};
       _msg[22] = '{FATAL  , "Watchdog expired"};
+      _msg[23] = '{ERROR  , "PWAKEUP must remain asserted until PREADY if PSEL and PWAKEUP are both high"};
+      _msg[24] = '{WARNING, "PWAKEUP should be asserted at least one cycle before PSEL"};
+      _msg[25] = '{WARNING, "PWAKEUP raised without starting a transfer"};
+      _msg[26] = '{ERROR  , "PWAKEUP undefined"};
+      _msg[27] = '{ERROR  , "PAUSER must remain stable for the entire transfer"};
+      _msg[28] = '{ERROR  , "PAUSER undefined"};
+      _msg[29] = '{WARNING, "PAUSER width should be max 128 bits"};
+      _msg[30] = '{ERROR  , "PWUSER must remain stable for the entire write transfer"};
+      _msg[31] = '{ERROR  , "PWUSER undefined"};
+      _msg[32] = '{WARNING, "PWUSER should be max DATA_WIDTH/2 bits"};
+      _msg[33] = '{WARNING, "PRUSER contains 'x'"};
+      _msg[34] = '{WARNING, "PRUSER should be max DATA_WIDTH/2 bits"};
+      _msg[35] = '{ERROR  , "PBUSER undefined"};
+      _msg[36] = '{WARNING, "PBUSER should be max 16 bits"};
+      //_msg[37] see PSTRB
+      //_msg[38] see PADDR
+      //_msg[39] see PWDATA
+      //_msg[40] see PRDATA
+
+
+      /* Initial width checks
+       */
+      if ($bits(PADDR) > 32)
+        message(38);
+
+      if (($bits(PWDATA) !=  8) ||
+          ($bits(PWDATA) != 16) ||
+          ($bits(PWDATA) != 32) )
+        message(39);
+
+      if (($bits(PRDATA) !=  8) ||
+          ($bits(PRDATA) != 16) ||
+          ($bits(PRDATA) != 32) )
+        message(40);
+
+`ifdef APB_VERSION_APB5
+      if ($bits(PAUSER) > 128)
+        message(29);
+
+      if ($bits(PWUSER) > DATA_WIDTH/2)
+        message(32);
+
+      if ($bits(PRUSER) > DATA_WIDTH/2)
+        message(34);
+
+      if ($bits(PBUSER) > 16)
+        message(36);
+`endif
   end
 
 
@@ -181,6 +295,20 @@ import ahb3lite_pkg::*;
   // Functions
   //
 
+  //Return selected APB_VERSION string
+  function string apb_version;
+`ifdef APB_VERSION_APB5
+    return "ABP5";
+`elsif APB_VERSION_APB4
+    return "APB4";
+`elsif APB_VERSION_APB3
+    return "APB3";
+`else
+    return "APB2";
+`endif
+  endfunction : apb_version
+
+
   //Check if PSTRB has a 'logical' structure. Meaning:
   //1 PSTRB for byte access and in the form of 'h8, 'h4, 'h2, 'h1
   //2 PSTRB's for hword access and in the form of 'hc0, 'hc0, 'h0c, 'h03
@@ -205,12 +333,12 @@ import ahb3lite_pkg::*;
 
   //Check if PSTRB is aligned with PADDR (or vice versa)
   function pstrb_misaligned(
-    input [PADDR_SIZE-1:0] paddr,
+    input [ADDR_WIDTH-1:0] paddr,
     input [PSTRB_SIZE-1:0] pstrb
   );
     int                    tr_size;
     logic [PSTRB_SIZE-1:0] mask;
-    logic [PADDR_SIZE-1:0] addr_mask,
+    logic [ADDR_WIDTH-1:0] addr_mask,
                            masked_addr;
 
     tr_size = -1;
@@ -231,7 +359,7 @@ import ahb3lite_pkg::*;
         end
     end
 
-    addr_mask   = {PADDR_SIZE{1'b1}} << tr_size;
+    addr_mask   = {ADDR_WIDTH{1'b1}} << tr_size;
     masked_addr = paddr & ~addr_mask;
 
     pstrb_misaligned = |masked_addr;
@@ -253,6 +381,7 @@ import ahb3lite_pkg::*;
     $display (" `--' '--' `---'  `--`--'    `-----' `---' `-   /`--' `---' ");
     $display ("- APB Protocol Checker ------------------  `---'  ----------");
     $display ("- Instance: %m");
+    $display ("- APB Version: %s", apb_version);
     $display ("------------------------------------------------------------");
     $display ("\n");
   endtask
@@ -322,26 +451,26 @@ import ahb3lite_pkg::*;
    * Check PADDR
    */
   task check_paddr;
-    logic [PADDR_SIZE-1:0] addr_mask, masked_addr;
+    logic [ADDR_WIDTH-1:0] addr_mask, masked_addr;
 
-    //PADDR must remain stable during entire transfer
+    //PADDR must remain stable during the entire transfer
     if (!dly_pready && PADDR !== dly_paddr)
       message(5);
 
     //PADDR must align with PSTRB
-    if (CHECK_PSTRB)
-      if (PWRITE)
-      begin
-          if (pstrb_misaligned(PADDR, PSTRB))
-            message(6);
-      end
-      else
-      begin
-          addr_mask   = {PADDR_SIZE{1'b1}} << $clog2(PSTRB_SIZE);
-          masked_addr = PADDR & ~addr_mask;
-          if (|masked_addr)
-            message(7);
-      end
+`ifdef APB_VERSION_APB4
+    if (PWRITE)
+    begin
+        if (pstrb_misaligned(PADDR, PSTRB))
+          message(6);
+    end
+`endif
+
+    //PADDR should be aligned to DATA_WIDTH
+    addr_mask   = {ADDR_WIDTH{1'b1}} << $clog2(PSTRB_SIZE);
+    masked_addr = PADDR & ~addr_mask;
+    if (|masked_addr)
+      message(7);
 
     //PADDR may not be undefined during transfer
     if (^PADDR === 1'bx)
@@ -353,7 +482,7 @@ import ahb3lite_pkg::*;
    * Check PWRITE
    */
   task check_pwrite;
-    //HWRITE must remain stable during a burst
+    //PWRITE must remain stable during the entire transfer
     if (!dly_pready && PWRITE !== dly_pwrite)
       message(9);
 
@@ -366,26 +495,32 @@ import ahb3lite_pkg::*;
   /*
    * Check PSTRB
    */
+`ifdef APB_VERSION_APB4
   task check_pstrb;
     //PSTRB valid?
     if (|PSTRB)
       if (~pstrb_valid(PSTRB))
         message(11);
 
-
     //PSTRB must remain stable during entire transfer
     if (!dly_pready && PSTRB !== dly_pstrb)
       message(12);
+
+    //PSTRB must be low during read transfer
+    if (!PWRITE && |PSTRB)
+      message(37);
 
     //PSTRB may not be undefined during transfer
     if (PWRITE && ^PSTRB === 1'bx)
       message(13);
   endtask : check_pstrb
+`endif
 
 
   /*
    * Check PPROT
    */
+`ifdef APB_VERSION_APB4
   task check_pprot;
     //PPROT must remain stable during entire transfer
     if (!dly_pready && PPROT !== dly_pprot)
@@ -395,7 +530,8 @@ import ahb3lite_pkg::*;
     if (^PPROT === 1'bx)
       message(15);
   endtask : check_pprot
-  
+`endif
+
 
   /*
    * Check PWDATA
@@ -408,24 +544,21 @@ import ahb3lite_pkg::*;
       message(16);
 
     //PWDATA undefined?
-    if (CHECK_PSTRB)
+`ifdef APB_VERSION_APB4
+    if (PWRITE)
     begin
-        if (PWRITE)
-        begin
-            is_x = 1'b0;
+        is_x = 1'b0;
 
-            foreach (PSTRB[i])
-              is_x |= (^PWDATA[i*8 +: 8] & PSTRB[i]) === 1'bx;
+        foreach (PSTRB[i])
+          is_x |= (^PWDATA[i*8 +: 8] & PSTRB[i]) === 1'bx;
 
-            if (is_x)
-              message(17);
-        end
+        if (is_x)
+          message(17);
     end
-    else
-    begin
-        if (PWRITE && ^PWDATA === 1'bx)
-          message(18);
-    end
+`else
+    if (PWRITE && ^PWDATA === 1'bx)
+      message(18);
+`endif
   endtask : check_pwdata
 
 
@@ -434,7 +567,11 @@ import ahb3lite_pkg::*;
    */
   task check_prdata;
     //PRDATA undefined when transfer completes?
-    if (PENABLE && PREADY)
+`ifdef APB_VERSION_APB3
+    if (PENABLE && PREADY && !PWRITE)
+`else
+    if (PENABLE && !PWRITE)
+`endif
       if (^PRDATA === 1'bx)
         message(19);
   endtask : check_prdata
@@ -443,22 +580,110 @@ import ahb3lite_pkg::*;
   /*
    * Check PREADY
    */
+`ifdef APB_VERSION_APB3
   task check_pready;
     //PREADY may not contain 'x' when PENABLE is high
     if (PENABLE && (PREADY === 1'bx || PREADY === 1'bz))
       message(20);
   endtask : check_pready
+`endif
 
 
   /*
    * Check PSLVERR
    */
+`ifdef APB_VERSION_APB3
   task check_pslverr;
     //PSLVERR may not be undefined when transfer completes
     if (PENABLE && PREADY)
       if (PSLVERR === 1'bx || PSLVERR === 1'bz)
         message(21);
   endtask : check_pslverr
+`endif
+
+
+  /*
+   * Check PWAKEUP
+   */
+`ifdef APB_VERSION_APB5
+  task check_pwakeup;
+    //PWAKEUP must remain asserted until PREADY asserted if PSEL
+    //  and PWAKEUP are high in the same cycle
+    if (!dly_pready && dly_psel && dly_pwakeup && !PWAKEUP)
+      message(23);
+
+    //Recommendation: assert PWAKEUP 1 cycle before PSEL
+    if (PSEL && PWAKEUP && !dly_pwakeup)
+      message(24);
+
+    //It is not recommended to assert, then deassert PWAKEUP without
+    // starting a transfer
+    if (!PWAKEUP && dly_pwakeup && !PSEL && !dly_psel)
+      message(25);
+
+    //PWAKEUP should not be undefined ever
+    if (PWAKEUP === 1'bx || PWAKEUP === 1'bz)
+      message(26);
+  endtask : check_pready
+`endif
+
+
+  /*
+   * Check PAUSER
+   */
+`ifdef APB_VERSION_APB5
+  task check_pauser;
+    //PAUSER must remain valid for the entire transfer
+    if (!dly_pready && PAUSER != dly_pauser)
+      message(27);
+
+    //PAUSER must be valid when PSEL is asserted
+    if (PAUSER === 1'bx || PAUSER === 1'bz)
+      message(28);
+  endtask : check_pauser
+`endif
+
+
+  /*
+   * Check PWUSER
+   */
+`ifdef APB_VERSION_APB5
+  task check_pwuser;
+    //PAUSER must remain valid for the entire transfer
+    if (!dly_pready && PWUSER != dly_pwuser)
+      message(30);
+
+    //PAUSER must be valid when PSEL and PWRITE are asserted
+    if (PWRITE && (PWUSER === 1'bx || PWUSER === 1'bz))
+      message(31);
+  endtask : check_pwuser
+`endif
+
+
+  /*
+   * Check PRUSER
+   */
+`ifdef APB_VERSION_APB5
+  task check_pruser;
+    //PRUSER undefined when transfer completes?
+    if (PENABLE && PREADY && !PWRITE)
+      if (^PRUSER === 1'bx)
+        message(33);
+  endtask : check_pruser
+`endif
+
+
+  /*
+   * Check PBUSER
+   */
+`ifdef APB_VERSION_APB5
+  task check_pbuser;
+    //PBUSER undefined when transfer completes?
+    if (PENABLE && PREADY)
+      if (PBUSER === 1'bx || PBUSER === 1'bz)
+        message(35);
+  endtask : check_pbuser
+`endif
 
 
 
@@ -476,8 +701,11 @@ import ahb3lite_pkg::*;
   always @(posedge PCLK, negedge PRESETn)
     if      (!PRESETn    ) access_phase <= 1'b0;
     else if ( setup_phase) access_phase <= 1'b1;
+`ifdef APB_VERSION_APB3
     else if ( PREADY     ) access_phase <= 1'b0;
-
+`else
+    else                   access_phase <= 1'b0;
+`endif
 
   /*
    * Check PSEL
@@ -513,16 +741,20 @@ import ahb3lite_pkg::*;
   /*
    * Check PSTRB
    */
+`ifdef APB_VERSION_APB4
   always @(posedge PCLK) if (CHECK_PSTRB) dly_pstrb <= PSTRB;
   always @(posedge PCLK) if (CHECK_PSTRB) if (PSEL) check_pstrb();
+`endif
 
 
   /*
    * Check PPROT
    */
+`ifdef APB_VERSION_APB4
   always @(posedge PCLK) if (CHECK_PPROT) dly_pprot <= PPROT;
   always @(posedge PCLK) if (CHECK_PPROT) if (PSEL) check_pprot();
-  
+`endif
+
 
   /*
    * Check PWDATA
@@ -540,14 +772,66 @@ import ahb3lite_pkg::*;
   /*
    * Check PREADY
    */
+`ifdef APB_VERSION_APB3
   always @(posedge PCLK) dly_pready <= PREADY;
   always @(posedge PCLK) if (PSEL) check_pready();
+`else
+  assign dly_ready = 1'b1;
+`endif
 
 
   /*
    * Check PSLVERR
    */
+`ifdef APB_VERSION_APB3
   always @(posedge PCLK) if (CHECK_PSLVERR) if (PSEL) check_pslverr();
+`endif
+
+
+  /*
+   * Check PWAKEUP
+   */
+`ifdef APB_VERSION_APB5
+  always @(posedge PCLK) dly_pwakeup <= PWAKEUP;
+  always @(posedge PCLK) if (PSEL) check_pwakeup();
+`endif
+
+
+  /*
+   * Check PAUSER
+   */
+`ifdef APB_VERSION_APB5
+  always @(posedge PCLK) if (USER_REQ_WIDTH > 0) dly_pauser <= PAUSER;
+  always @(posedge PCLK) if (USER_REQ_WIDTH > 0) check_pauser();
+`endif
+
+
+  /*
+   * Check PWUSER
+   */
+`ifdef APB_VERSION_APB5
+  always @(posedge PCLK) if (USER_DATA_WIDTH > 0) dly_pwuser <= PWUSER;
+  always @(posedge PCLK) if (USER_DATA_WIDTH > 0) if (PSEL) check_pwuser();
+`endif
+
+
+  /*
+   * Check PRUSER
+   */
+`ifdef APB_VERSION_APB5
+  always @(posedge PCLK) if (USER_DATA_WIDTH > 0) dly_pruser <= PRUSER;
+  always @(posedge PCLK) if (USER_DATA_WIDTH > 0) if (PSEL) check_pruser();
+`endif
+
+
+  /*
+   * Check PBUSER
+   */
+`ifdef APB_VERSION_APB5
+  always @(posedge PCLK) if (USER_RESP_WIDTH > 0) dly_pbuser <= PBUSER;
+  always @(posedge PCLK) if (USER_RESP_WIDTH > 0) if (PSEL) check_pbuser();
+`endif
+
 
 
    /*
@@ -556,12 +840,16 @@ import ahb3lite_pkg::*;
   always @(posedge PCLK, negedge PRESETn)
     if      (!PRESETn           ) watchdog_cnt <= WATCHDOG_TIMEOUT;
     else if (!PSEL              ) watchdog_cnt <= WATCHDOG_TIMEOUT;
+`ifdef APB_VERSION_APB3
     else if ( PENABLE && PREADY ) watchdog_cnt <= WATCHDOG_TIMEOUT;
+`else
+    else if ( PENABLE           ) watchdog_cnt <= WATCHDOG_TIMEOUT;
+`endif
     else                          watchdog_cnt <= watchdog_cnt -1'h1;
 
 
   always @(posedge PCLK)
-    if (WATCHDOG_TIMEOUT)
+    if (WATCHDOG_TIMEOUT > 0)
       if (~|watchdog_cnt)
         message(22);
 endmodule : apb_protocol_checker
