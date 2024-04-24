@@ -161,7 +161,7 @@ import ahb3lite_pkg::*;
   //
   // Message Structure
   //
-  localparam int MESSAGE_COUNT   = 41;
+  localparam int MESSAGE_COUNT   = 43;
 
   typedef enum int {OFF    =0,
                     INFO   =1,
@@ -186,7 +186,7 @@ import ahb3lite_pkg::*;
       _msg[ 3] = '{ERROR  , "PENABLE must be high during Access phase"};
       _msg[ 4] = '{ERROR  , "PENABLE undefined"};
       _msg[ 5] = '{ERROR  , "PADDR must remain stable for the entire transfer"};
-      _msg[ 6] = '{ERROR  , "PADDR vs PSTRB misaligned"};
+      _msg[ 6] = '{ERROR  , "PADDR versus PSTRB misaligned"};
       _msg[38] = '{WARNING, "PADDR should be max 32 bits"};
       _msg[ 7] = '{ERROR  , "PADDR should be aligned to DATA_WIDTH"};
       _msg[ 8] = '{ERROR  , "PADDR undefined"};
@@ -198,7 +198,7 @@ import ahb3lite_pkg::*;
       _msg[33] = '{ERROR  , "PSTRB must be low during read transfer"};
       _msg[14] = '{ERROR  , "PPROT must remain stable for the entire transfer"};
       _msg[15] = '{ERROR  , "PPROT undefined"};
-      _msg[16] = '{ERROR  , "PWDATA must remain stable during wait states"};
+      _msg[16] = '{ERROR  , "PWDATA must remain stable for the entire transfer"};
       _msg[17] = '{WARNING, "PWDATA contains 'x'"};
       _msg[18] = '{WARNING, "PWDATA contains 'x'"};
       _msg[39] = '{WARNING, "PWDATA should be 8, 16, or 32 bits wide"};
@@ -207,7 +207,7 @@ import ahb3lite_pkg::*;
       _msg[20] = '{ERROR  , "PREADY undefined during Access phase"};
       _msg[21] = '{ERROR  , "PSLVERR undefined"};
       _msg[22] = '{FATAL  , "Watchdog expired"};
-      _msg[23] = '{ERROR  , "PWAKEUP must remain asserted until PREADY if PSEL and PWAKEUP are both high"};
+      _msg[23] = '{ERROR  , "PWAKEUP must remain high until the end of the transfer"};
       _msg[24] = '{WARNING, "PWAKEUP should be asserted at least one cycle before PSEL"};
       _msg[25] = '{WARNING, "PWAKEUP raised without starting a transfer"};
       _msg[26] = '{ERROR  , "PWAKEUP undefined"};
@@ -225,6 +225,8 @@ import ahb3lite_pkg::*;
       //_msg[38] see PADDR
       //_msg[39] see PWDATA
       //_msg[40] see PRDATA
+      _msg[41] = '{ERROR  , "PRESETn undefined"};
+      _msg[42] = '{ERROR  , "PCLK undefined"};
 
 
       /* Initial width checks
@@ -292,7 +294,7 @@ import ahb3lite_pkg::*;
 
   //Get severity level of a message/check
   function automatic severity_t get_severity(int msg_no);
-    if (msg_no < MESSAGE_COUNT)
+    if (msg_no < MESSAGE_COUNT && msg_no >= 0)
       return _msg[msg_no].severity;
   endfunction : get_severity
 
@@ -420,6 +422,26 @@ import ahb3lite_pkg::*;
   //
 
   /*
+   * Check PCLK
+   */
+  task check_pclk;
+    //PCLK must not be undefined
+    if (PCLK === 1'bx || PCLK === 1'bz)
+      message(42);
+  endtask : check_pclk
+
+
+  /*
+   * Check PRESETn
+   */
+  task check_presetn;
+    //PRESETn must not be undefined
+    if (PRESETn === 1'bx || PRESETn === 1'bz)
+      message(41);
+  endtask : check_presetn
+
+
+  /*
    * Check PSEL
    */
   task check_psel;
@@ -429,7 +451,7 @@ import ahb3lite_pkg::*;
         message(0);
 
     //PSEL must not be undefined
-    if (PSEL === 1'bx)
+    if (PSEL === 1'bx || PSEL === 1'bz)
       message(1);
   endtask : check_psel
 
@@ -715,6 +737,19 @@ import ahb3lite_pkg::*;
 `else
     else                   access_phase <= 1'b0;
 `endif
+
+
+  /*
+   * Check PRESETn
+   */
+  always @(PRESETn) check_presetn();
+  
+
+  /*
+   * Check PCLK
+   */
+  always @(PCLK) check_pclk();
+
 
   /*
    * Check PSEL
