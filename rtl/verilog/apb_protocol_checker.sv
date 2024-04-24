@@ -195,7 +195,7 @@ import ahb3lite_pkg::*;
       _msg[11] = '{WARNING, "PSTRB value non byte/word/dword/..."};
       _msg[12] = '{ERROR  , "PSTRB must remain stable for the entire transfer"};
       _msg[13] = '{ERROR  , "PSTRB undefined"};
-      _msg[33] = '{ERROR  , "PSTRB must be low during read transfer"};
+      _msg[37] = '{ERROR  , "PSTRB must be low during read transfer"};
       _msg[14] = '{ERROR  , "PPROT must remain stable for the entire transfer"};
       _msg[15] = '{ERROR  , "PPROT undefined"};
       _msg[16] = '{ERROR  , "PWDATA must remain stable for the entire transfer"};
