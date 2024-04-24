@@ -422,16 +422,6 @@ import ahb3lite_pkg::*;
   //
 
   /*
-   * Check PCLK
-   */
-  task check_pclk;
-    //PCLK must not be undefined
-    if (PCLK === 1'bx || PCLK === 1'bz)
-      message(42);
-  endtask : check_pclk
-
-
-  /*
    * Check PRESETn
    */
   task check_presetn;
@@ -439,6 +429,17 @@ import ahb3lite_pkg::*;
     if (PRESETn === 1'bx || PRESETn === 1'bz)
       message(41);
   endtask : check_presetn
+
+
+  /*
+   * Check PCLK
+   */
+  task check_pclk;
+    //PCLK must not be undefined
+    if (PRESETn)
+      if (PCLK === 1'bx || PCLK === 1'bz)
+        message(42);
+  endtask : check_pclk
 
 
   /*
