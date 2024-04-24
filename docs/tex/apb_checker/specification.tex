@@ -22,8 +22,5 @@ The module ports and executed rules reflect the selected protocol.
  
 
 \subsection{PCLK}\label{PCLK}
-APB is a synchronous protocol. All transactions take place on the rising edge of PCLK.
-Most of the rules are triggered on the rising edge of PCLK. This has the advantage of simple rule design and fast execution. The protocol checker has a minimal simulation performance effect. The disadvantage is that the checker does not look at values inbetween clock edges. It is assumed that all APB signals are driven by registers or at least behave like being driven by registers.
-
-The APB Protocol Checker VIP has no rule to validate that PCLK is connected and driven. This must be validated outside of the VIP.
-
+APB is a synchronous protocol. All transactions take place on the rising edge of \texttt{PCLK}.
+Most of the rules are triggered on the rising edge of \texttt{PCLK}. This has the advantage of simple rule design and fast execution. The protocol checker has a minimal simulation performance effect. The disadvantage is that the checker does not look at values inbetween clock edges. It is assumed that all APB signals, except for \texttt{PRESETn} and \texttt{PCLK}, are driven by registers or at least behave like being driven by registers.
