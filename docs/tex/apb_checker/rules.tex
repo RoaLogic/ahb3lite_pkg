@@ -15,7 +15,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
   timing/rowdist=3ex,
   timing/name/.style={font=\sffamily\scriptsize}
 ]
-\busref{PRESETn}      & 1L 2H\\
+\busref{PRESETn}      & 1L 1H {[dotted] 0.5H}\\
 \busref{PCLK}         & 19{c}\\
 \busref{PSEL}         & 0.5U 1U 2L 3H   2H      1L\\
 \busref{PENABLE}      & 0.5U 1U 3L 2H   1L 1H   1L\\
@@ -26,7 +26,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 \busref[31:0]{PRDATA} & 0.5U 5U D{DA}   2U      1U\\
 \busref{PREADY}       & 0.5U 4U 1L 1H   1U 1H   1U\\
 \busref{PSLVERR}      & 0.5U 4U 2L      2L      1U\\
-\busref{PWAKEUP}      & 0.5U 1U 1L 1.5H\\
+\busref{PWAKEUP}      & 0.5U 1U 1L 1H {[dotted] 0.5H}\\
 \busref{PAUSER}       & 0.5U 3U 3D{}    2D      1U\\
 \busref{PRUSER}       & 0.5U 3U 3D{}    2D      1U\\
 \busref{PWUSER}       & 0.5U 3U 3D{}    2D      1U\\
