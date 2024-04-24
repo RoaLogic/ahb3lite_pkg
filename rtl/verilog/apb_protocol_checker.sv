@@ -55,6 +55,13 @@
  */
 
 
+/*
+ * Relationship between message number and rule number
+ * #Rule = message-number +1
+ * example msgno=0 results in APB-1
+ *         msgno=1 results in APB-2
+ */
+
 //APB5 implies APB4 and below
 `ifdef APB_VERSION_APB5
     `ifndef APB_VERSION_APB4
@@ -154,7 +161,7 @@ import ahb3lite_pkg::*;
   //
   // Message Structure
   //
-  localparam int MESSAGE_COUNT   = 23;
+  localparam int MESSAGE_COUNT   = 41;
 
   typedef enum int {OFF    =0,
                     INFO   =1,
@@ -257,7 +264,7 @@ import ahb3lite_pkg::*;
     string     msg;
 
     msg_severity = _msg[msg_no].severity;
-    msg          = $sformatf ("APB-%0d %s (%m): %s @%0t", msg_no, msg_severity.name(), _msg[msg_no].message, $time);
+    msg          = $sformatf ("APB-%0d %s (%m): %s @%0t", msg_no +1, msg_severity.name(), _msg[msg_no].message, $time);
 
     case (msg_severity)
       OFF    : ;
@@ -278,13 +285,13 @@ import ahb3lite_pkg::*;
 
 
   //Set severity level of a message/check
-  task set_severity(int msg_no, severity_t severity);
-    if (msg_no < MESSAGE_COUNT)
+  task automatic set_severity(int msg_no, severity_t severity);
+    if (msg_no < MESSAGE_COUNT && msg_no >= 0)
       _msg[msg_no].severity = severity;
   endtask : set_severity
 
   //Get severity level of a message/check
-  function severity_t get_severity(int msg_no);
+  function automatic severity_t get_severity(int msg_no);
     if (msg_no < MESSAGE_COUNT)
       return _msg[msg_no].severity;
   endfunction : get_severity
@@ -698,6 +705,8 @@ import ahb3lite_pkg::*;
   assign setup_phase = (PSEL & !dly_psel                ) |
                        (PSEL &  dly_penable & dly_pready);
 
+  initial access_phase = 1'b0;
+
   always @(posedge PCLK, negedge PRESETn)
     if      (!PRESETn    ) access_phase <= 1'b0;
     else if ( setup_phase) access_phase <= 1'b1;
@@ -710,6 +719,8 @@ import ahb3lite_pkg::*;
   /*
    * Check PSEL
    */
+  initial dly_psel = 0;
+
   always @(posedge PCLK, negedge PRESETn)
     if (!PRESETn) dly_psel <= 1'b0;
     else          dly_psel <= PSEL;
