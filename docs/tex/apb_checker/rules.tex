@@ -100,9 +100,10 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
   timing/rowdist=3ex,
   timing/name/.style={font=\sffamily\scriptsize}
 ]
-\busref{PCLK}  & 7{c} \\
-\busref{PSEL}  & 0.5L {[red] 1X} {[red] 1U} 1H\\
-\busref{APB-2} & 0.5L 2H 1L\\
+\busref{PRESETn} & 3.5H\\
+\busref{PCLK}    & 7{c} \\
+\busref{PSEL}    & 0.5L {[red] 1X} {[red] 1U} 1H\\
+\busref{APB-2}   & 0.5L 2H 1L\\
 \extracode
 \begin{pgfonlayer}{background}
 \begin{scope}[semitransparent ,semithick]
@@ -563,6 +564,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 \pagebreak
 
 
+
 \subsection{PPROT undefined}
 
 \begin{description}
@@ -741,13 +743,12 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-
 \subsection{PREADY undefined during Access phase}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
   \item Message: APB-21
-  \item Severity: WARNING
+  \item Severity: ERROR
   \item Description: The PREADY signal is undefined (`x') or (`z') during the access phase of a transfer.
   \item APB Version: from APB3
 \end{description}
@@ -774,3 +775,617 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 \end{tikztimingtable}
 \caption{APB-21 Example}\label{fig:APB-21}
 \end{figure}
+
+
+
+\subsection{PSLVERR undefined}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-22
+  \item Severity: ERROR
+  \item Description: The PSLVERR signal is undefined (`x') or (`z') during the final cycle of a transfer.
+  \item APB Version: from APB3
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}    & 7{c} \\
+\busref{PSEL}    & 0.5L 2H    1L\\
+\busref{PENABLE} & 0.5U 1L 1H 1U\\
+\busref{PREADY}  & 0.5U 1U 1H 1U\\
+\busref{PSLVERR} & 0.5U 1U {[red]1X} 1U\\
+\busref{APB-22}  & 0.5L 1L 1H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-22 Example}\label{fig:APB-22}
+\end{figure}
+
+\pagebreak
+
+
+
+\subsection{Watchdog expired}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-23
+  \item Severity: FATAL
+  \item Description: The optional watchdog counter expired.
+  \item APB Version: from APB3
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}          & 13{c} \\
+\busref{PSEL}          & 0.5L 6H\\
+\busref{PENABLE}       & 0.5U 1L 5H\\
+\busref{PREADY}        & 0.5U 1U 5L\\
+\busref{watchdog\_cnt} & 0.5U 1U 1D{n} 1D{n-1} {[dotted] 1D{}} 1D{1} 1D{0}\\
+\busref{APB-23}        & 0.5L 5L 1H\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,6.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-23 Example}\label{fig:APB-23}
+\end{figure}
+
+
+
+\subsection{PWAKEUP must remain high until the end of the transfer}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-24
+  \item Severity: ERROR
+  \item Description: PWAKEUP must remain high (`1') until PREADY is high (`1'), if both PSEL and PWAKEUP are high (`1').
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}    & 11{c} \\
+\busref{PSEL}    & 0.5L 1H 3H           1L\\
+\busref{PENABLE} & 0.5U 1L 3H           1L\\
+\busref{PREADY}  & 0.5U 1U 2L 1H        1L\\
+\busref{PWAKEUP} & 0.5H 1H 1H {[red]2L} 1L\\
+\busref{APB-24}  & 0.5L 2L 2H           1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,5.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-24 Example}\label{fig:APB-24}
+\end{figure}
+
+\pagebreak
+
+
+
+\subsection{PWAKEUP should be asserted at least one cycle before PSEL}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-25
+  \item Severity: WARNING
+  \item Description: PWAKEUP should be high (`1') at least 1 PCLK cycle before PSEL goes high (`1').
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}    & 5{c} \\
+\busref{PWAKEUP} & 0.5L {[red]1L} 1H\\
+\busref{PSEL}    & 0.5L 1L        1H\\
+\busref{APB-25}  & 0.5L 1H        1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,2.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-25 Example}\label{fig:APB-25}
+\end{figure}
+
+
+
+\subsection{PWAKEUP raised without starting a transfer}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-26
+  \item Severity: WARNING
+  \item Description: PWAKEUP should not be raised without starting a transfer.
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}    & 7{c} \\
+\busref{PWAKEUP} & 0.5L 2H {[red]1L} 1L\\
+\busref{PSEL}    & 0.5L 2L 2L\\
+\busref{APB-26}  & 0.5L 2L 1H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-26 Example}\label{fig:APB-26}
+\end{figure}
+
+
+
+\subsection{PWAKEUP undefined}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-27
+  \item Severity: ERROR
+  \item Description: The PWAKEUP signal may never be undefined (`x') or (`z').
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}    & 7{c} \\
+\busref{PWAKEUP} & 0.5L 1L {[red]1X} 1H\\
+\busref{APB-27}  & 0.5L 1L 1H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-27 Example}\label{fig:APB-27}
+\end{figure}
+
+\pagebreak
+
+
+
+\subsection{PAUSER must remain stable for the entire transfer}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-28
+  \item Severity: ERROR
+  \item Description: The PAUSER signal may not change during a transfer.
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}   & 7{c} \\
+\busref{PSEL}   & 0.5L 2H 1L\\
+\busref{PAUSER} & 0.5U 1D{A} {[red] 1D{B}} 1U\\
+\busref{APB-28} & 0.5L 1L 1H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-28 Example}\label{fig:APB-28}
+\end{figure}
+
+
+
+\subsection{PAUSER undefined}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-29
+  \item Severity: ERROR
+  \item Description: The PAUSER signal may never be undefined (`x') or (`z') during a transfer.
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}   & 7{c} \\
+\busref{PSEL}   & 0.5L 2H 1L\\
+\busref{PAUSER} & 0.5U {[red] 2X} 1U\\
+\busref{APB-29} & 0.5L 2H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-29 Example}\label{fig:APB-29}
+\end{figure}
+
+
+
+\subsection{PAUSER should be max 128 bits}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-30
+  \item Severity: WARNING
+  \item Description: The PAUSER signal width should be less than 128 bits.
+  \item APB Version: from APB5
+\end{description}
+
+\pagebreak
+
+
+
+\subsection{PWUSER must remain stable for the entire transfer}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-31
+  \item Severity: ERROR
+  \item Description: The PWUSER signal may not change during a transfer.
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}   & 7{c} \\
+\busref{PSEL}   & 0.5L 2H 1L\\
+\busref{PWUSER} & 0.5U 1D{A} {[red] 1D{B}} 1U\\
+\busref{APB-31} & 0.5L 1L 1H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-31 Example}\label{fig:APB-31}
+\end{figure}
+
+
+
+\subsection{PWUSER undefined}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-32
+  \item Severity: ERROR
+  \item Description: The PWUSER signal may never be undefined (`x') or (`z') during a transfer.
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}   & 7{c} \\
+\busref{PSEL}   & 0.5L 2H 1L\\
+\busref{PWUSER}  & 0.5U {[red] 2X} 1U\\
+\busref{APB-32} & 0.5L 2H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-32 Example}\label{fig:APB-32}
+\end{figure}
+
+
+
+\subsection{PWUSER should be max DATA\_WIDTH/2 bits}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-33
+  \item Severity: WARNING
+  \item Description: The PWUSER signal width should be less than DATA\_WIDTH/2 bits.
+  \item APB Version: from APB5
+\end{description}
+
+\pagebreak
+
+
+
+\subsection{PRUSER contains 'x'}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-34
+  \item Severity: WARNING
+  \item Description: One or more bits of the PRUSER signal are undefined (`x') or (`z') during a read transfer.
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}         & 7{c} \\
+\busref{PSEL}         & 0.5L 2H                   1L\\
+\busref{PENABLE}      & 0.5U 1L 1H                1U\\
+\busref{PWRITE}       & 0.5U 2L                   1U\\
+\busref[15:0]{PRUSER} & 0.5U 1U {[red]1D{0xXEDC}} 1U\\
+\busref{APB-20}       & 0.5L 1L 1H                1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-34 Example}\label{fig:APB-34}
+\end{figure}
+
+
+
+\subsection{PRUSER should be max DATA\_WIDTH/2 bits}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-35
+  \item Severity: WARNING
+  \item Description: The PRUSER signal width should be less than DATA\_WIDTH/2 bits.
+  \item APB Version: from APB5
+\end{description}
+
+
+
+\subsection{PBUSER contains 'x'}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-36
+  \item Severity: WARNING
+  \item Description: One or more bits of the PBUSER signal are undefined (`x') or (`z') during the final cycle of a transfer.
+  \item APB Version: from APB5
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}         & 9{c} \\
+\busref{PSEL}         & 0.5L 2H            1H                1L\\
+\busref{PENABLE}      & 0.5U 1L 1H         1H                1U\\
+\busref{PREADY}       & 0.5U 1U 1L         1H                1U\\
+\busref[15:0]{PBUSER} & 0.5U 1U 1D{0xXEDC} {[red]1D{0xXEDC}} 1U\\
+\busref{APB-36}       & 0.5L 1L 1L         1H                1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,4.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-36 Example}\label{fig:APB-36}
+\end{figure}
+
+
+
+\subsection{PBUSER should be max 16 bits}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-37
+  \item Severity: WARNING
+  \item Description: The PBUSER signal width should be less than 16 bits.
+  \item APB Version: from APB5
+\end{description}
+
+\pagebreak
+
+
+
+\subsection{PSTRB must be low during read transfer}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-38
+  \item Severity: ERROR
+  \item Description: The PSTRB signal must be low (all `0') during a read transfer.
+  \item APB Version: from APB4
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PCLK}   & 7{c} \\
+\busref{PSEL}   & 0.5L 2H 1L\\
+\busref{PWRITE} & 0.5L 2L 1L\\
+\busref{PSTRB}  & 0.5U {[red] 2D{0x01}} 1U\\
+\busref{APB-38} & 0.5L 2H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-38 Example}\label{fig:APB-38}
+\end{figure}
+
+
+
+\subsection{PADDR should be max 32 bits}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-39
+  \item Severity: WARNING
+  \item Description: The PADDR signal width should be less than 32 bits.
+  \item APB Version: All
+\end{description}
+
+
+
+\subsection{PWDATA should be max 8, 16, or 32 bits wide}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-40
+  \item Severity: WARNING
+  \item Description: The PWDATA signal width should be either 8, 16, or 32 bits.
+  \item APB Version: All
+\end{description}
+
+
+
+\subsection{PRDATA should be max 8, 16, or 32 bits wide}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-41
+  \item Severity: WARNING
+  \item Description: The PRDATA signal width should be either 8, 16, or 32 bits.
+  \item APB Version: All
+\end{description}
+
+
+
+\subsection{PRESETn Undefined}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-42
+  \item Severity: ERROR
+  \item Description: The PRESETn signal may never be undefined (`x') or (`z').
+  \item APB Version: All
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PRESETn} & 0.5L 1L 1X 1H\\
+\busref{APB-42}   & 0.5L 1L 1H 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-42 Example}\label{fig:APB-42}
+\end{figure}
+
+
+
+\subsection{PCLK Undefined}
+
+\begin{description}
+  \setlength\itemsep{-0.45em}
+  \item Message: APB-43
+  \item Severity: ERROR
+  \item Description: The PCLK signal may never be undefined (`x') or (`z').
+  \item APB Version: All
+\end{description}
+
+\begin{figure}[h]
+\begin{tikztimingtable}[%
+  timing/dslope=0.1,
+  timing/.style={x=5ex,y=2ex},
+  x=5ex,
+  timing/rowdist=3ex,
+  timing/name/.style={font=\sffamily\scriptsize}
+]
+\busref{PRESETn} & 0.5H 3H\\
+\busref{PCLK}    & 3{c} 1x 3{c}\\
+\busref{APB-43}  & 0.5L 1L 1h 1L\\
+\extracode
+\begin{pgfonlayer}{background}
+\begin{scope}[semitransparent ,semithick]
+\vertlines[darkgray,dotted]{0.5,1.5,...,3.0}
+\end{scope}
+\end{pgfonlayer}
+\end{tikztimingtable}
+\caption{APB-43 Example}\label{fig:APB-43}
+\end{figure}
+
