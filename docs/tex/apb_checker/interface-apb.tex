@@ -1,0 +1,108 @@
+\section{APB Interface}\label{apb-interface}
+
+The APB Interface is a configurable APB Interface. All signals
+defined in the protocol are supported as described below. See the
+\emph{AMBA APB Protocol Specifications} for a complete description
+of the signals.
+
+\begin{longtable}[]{@{}lccll@{}}
+\toprule
+\textbf{Port} & \textbf{Size} & \textbf{Direction} & \textbf{Version} & \textbf{Description}\tabularnewline
+\midrule
+\endhead
+\texttt{PRESETn} & 1 & Input & APB2 & Reset\tabularnewline
+\texttt{PCLK} & 1 & Input & APB2 & Clock\tabularnewline
+\texttt{PSEL} & 1 & Input & APB2 & Select\tabularnewline
+\texttt{PENABLE} & 1 & Input & APB2 & Enable\tabularnewline
+\texttt{PADDR} & \texttt{ADDR\_WIDTH} & Input & APB2 & Address\tabularnewline
+\texttt{PWRITE} & 1 & Input & APB2 & Direction\tabularnewline
+\texttt{PSTRB} & \texttt{DATA\_WIDTH/8} & Input & APB4 & Write Strobe\tabularnewline
+\texttt{PPROT} & 3 & Input & APB4 & Protection Type\tabularnewline
+\texttt{PWDATA} & \texttt{DATA\_WIDTH} & Input & APB2 & Write Data\tabularnewline
+\texttt{PRDATA} & \texttt{DATA\_WIDTH} & Input & APB2 & Read Data\tabularnewline
+\texttt{PREADY} & 1 & Input & APB3 & Ready\tabularnewline
+\texttt{PSLVERR} & 1 & Input & APB3 & Transfer Error\tabularnewline
+\texttt{PWAKEUP} & 1 & Input & APB5 & Wake-up\tabularnewline
+\texttt{PAUSER} & \texttt{USER\_REQ\_WIDTH} & Input & APB5 & User request attribute\tabularnewline
+\texttt{PWUSER} & \texttt{USER\_DATA\_WIDTH} & Input & APB5 & User write data attribute\tabularnewline
+\texttt{PRUSER} & \texttt{USER\_DATA\_WIDTH} & Input & APB5 & User read data attribute\tabularnewline
+\texttt{PBUSER} & \texttt{USER\_RESP\_WIDTH} & Input & APB5 & User response attribute\tabularnewline
+\bottomrule
+\caption{APB Interface Ports}
+\end{longtable}
+
+Signals for an APB version higher than selected are not present on the interface. See the \hyperref[core-configuration]{Core Configuration} section.
+
+
+\subsection{PRESETn}\label{presetn}
+
+When the active low asynchronous \texttt{PRESETn} input is asserted (`0'), the
+APB interface is put into its initial reset state. 
+
+\subsection{PCLK}\label{pclk}
+
+\texttt{PCLK} is the APB interface clock. All APB signals are timed against the rising edge of \texttt{PCLK}.
+
+The APB Bus Checker VIP requires a valid \texttt{PCLK}. All checks and rules trigger on the rising edge of \texttt{PCLK}.
+
+\subsection{PSEL}\label{psel}
+
+The APB \emph{Requester} generates \texttt{PSEL}, signaling to a \emph{Completer} that it is selected and that a data transfer is required.
+
+\subsection{PENABLE}\label{penable}
+
+\texttt{PENABLE} indicates the second and subsequent cycles of a transfer. The cycles when \texttt{PENABLE} is asserted (`1') are called the \emph{Access Phase}. It is driven by the \emph{Requester}.
+
+\subsection{PADDR}\label{paddr}
+
+\texttt{PADDR} is the APB address bus. The bus width is defined by the \texttt{ADDR\_WIDTH} parameter.
+
+\subsection{PWRITE}\label{pwrite}
+
+\texttt{PWRITE} indicates the direction of the transfer. When \texttt{PWRITE} is asserted (`1') it indicates a write access and a read data access when de-asserted (`0'). It is driven by the \emph{Requester}.
+
+\subsection{PSTRB}\label{pstrb}
+
+\texttt{PSTRB} is an optional APB4 signal driven by the \emph{Requester}.. It indicates which byte lane to update during a
+write transfer. There is one \texttt{PSTRB} signal per byte lane of the APB write data bus
+(\texttt{PWDATA}), such that \texttt{PSTRB[n]} corresponds to \texttt{PWDATA[(8n+7):8n]}.
+
+\subsection{PPROT}\label{pprot}
+
+\texttt{PPROT} is an optional APB4 signal driven by the \emph{Requester}. It indicates the normal, privileged, or secure protection level of the transaction and whether the transaction is a data or an instruction access. \texttt{PPROT} has a width of 3 bits.
+
+\subsection{PWDATA}\label{pwdata}
+
+\texttt{PWDATA} is the APB write data bus and is driven by the \emph{Requester} during write cycles, when \texttt{PWRITE} is asserted (`1'). The bus width is defined by the \texttt{DATA\_WIDTH} parameter.
+
+\subsection{PRDATA}\label{prdata}
+
+\texttt{PRDATA} is the APB read data bus and is driven by the \emph{Completer} during read cycles, when \texttt{PWRITE} is de-asserted (`0'). The bus width is defined by the \texttt{DATA\_WIDTH} parameter.
+
+\subsection{PREADY}\label{pready}
+
+\texttt{PREADY} is an APB3 signal driven by the \emph{Completer}. It is used to extend an APB transfer.
+
+\subsection{PSLVERR}\label{pslverr}
+
+\texttt{PSLVERR} is an optional APB3 signal driven by the \emph{Completer}. It indicates an error condition on the APB bus when asserted (`1').
+
+\subsection{PWAKEUP}\label{pwakeup}
+
+\texttt{PWAKEUP} is an optional APB5 signal driven by the \emph{Requester}. It indicates any activity associated with an APB interface.
+
+\subsection{PAUSER}\label{pauser}
+
+\texttt{PAUSER} is an optional APB5 signal driven by the \emph{Requester}. The bus width is defined by the \texttt{USER\_REQ\_WIDTH} parameter.
+
+\subsection{PWUSER}\label{pwuser}
+
+\texttt{PWUSER} is an optional APB5 signal driven by the \emph{Requester}. The bus width is defined by the \texttt{USER\_DATA\_WIDTH} parameter.
+
+\subsection{PRUSER}\label{pruser}
+
+\texttt{PRUSER} is an optional APB5 signal driven by the \emph{Requester}. The bus width is defined by the \texttt{USER\_DATA\_WIDTH} parameter.
+
+\subsection{PBUSER}\label{pbuser}
+
+\texttt{PBUSER} is an optional APB5 signal driven by the \emph{Requester}. The bus width is defined by the \texttt{USER\_RESP\_WIDTH} parameter.

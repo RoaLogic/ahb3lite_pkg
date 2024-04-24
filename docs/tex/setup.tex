@@ -1,0 +1,25 @@
+% Load Roalogic Title Page Generator
+\usepackage{pkg/roalogictitle}
+
+\graphicspath{ {./assets/img/} }
+
+% Document Variables
+
+\title{AMBA APB Bus Checker VIP}
+\heading{APB Bus Checker Verification IP}
+\author{Roa Logic BV}
+\date{17-Apr-2024}
+\version{1.0}
+\doctype{Datasheet}
+\project{\url{https://roalogic.github.io/amba_pkg}}
+\author{Richard Herveille}
+
+ % Set page headers/footer
+\pagestyle{fancy}
+\fancyhf{}
+% \fancyhead[LE,RO]{\thepage}
+% \fancyhead[RE,LO]{APB Protocol Checker}
+% \fancyfoot[CE,CO]{\textcircled{c} Roa Logic}
+\fancyhead[L]{\theheading\space(v\theversion)}
+\fancyhead[R]{\includegraphics[width=50px,trim=0 25px 0 0]{assets/img/RoaLogicHeader}}
+\fancyfoot[C]{\thepage}

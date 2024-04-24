@@ -1,0 +1,54 @@
+\chapter{Introduction} \label{introduction}
+
+The Roa Logic APB Bus Checker Verification IP helps designers use the ARM\textsuperscript{\textregistered}  AMBA\textsuperscript{\textregistered}  APB bus in their designs. Throughout this document ARM\textsuperscript{\textregistered}  AMBA\textsuperscript{\textregistered}  APB will be simply refered to as APB.
+The Roa Logic APB Bus Checker continuously snoops the APB bus and reports any protocol issues it detects.
+In addition to rules checking, the ABP Bus Checker VIP contains an optional watchdog that fires when the APB Bus is unresponsive.
+The APB Bus Checker VIP supports the following APB versions:
+\begin{itemize}
+\item
+  AMBA 2 APB Specification (Issue A), commonly known as APB2
+\item
+  AMBA 3 APB Specification (Issue B), commonly known as APB3
+\item
+  AMBA APB Specification (Issue C), commonly known as APB4
+\item
+  AMBA APB Specification (Issue D), commonly known as APB5
+\end{itemize}
+
+The Roa Logic APB Bus Checker VIP is released under the permissive GPLv3 license.
+
+
+\section{Features}\label{features}
+
+\begin{itemize}
+\item
+  Plug 'n Play APB Bus Checker
+\item
+  Compliant with APB2, APB3, APB4, and APB5 Bus protocols
+\item
+  Supports configurable APB address, data, user signal, and response widths
+\item
+  Autonomously checks APB bus transactions and signals
+\item
+  User configurable severity per rule
+\item
+  Easily extensible with custom rules
+\item
+  Configurable watchdog fires when the APB bus is unresponsive
+\end{itemize}
+
+
+\section{Benefits}\label{Benefits}
+
+\begin{itemize}
+\item
+  Faster debug due to customised reports
+\item
+  Integrates into existing Verilog and SystemVerilog testbenches
+\item
+  Works with existing OVM and UVM test environments
+\item
+  Open Source, therefore code can be reviewed and extended
+\item
+  Permissive license
+\end{itemize}

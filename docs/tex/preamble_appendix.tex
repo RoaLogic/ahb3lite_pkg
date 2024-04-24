@@ -1,0 +1,95 @@
+
+%Show appendices as 'Appendix A'
+%Appendices are 'section's, not 'chapter's
+
+\makeatletter
+\@ifundefined{texorpdfstring}{\let\texorpdfstring\@firstoftwo}{}
+\@ifundefined{hyper@makecurrent}{}{%
+  \usepackage{xpatch}%
+  \newcommand*\Hy@subsectionstring{subsection}%
+  \newcommand*\Hy@subsubsectionstring{subsubsection}%
+  \newcommand*\Hy@subsecapp{subsection}%
+  \newcommand*\Hy@subsubsecapp{subsubsection}%
+  \xpatchcmd{\hyper@makecurrent}{%
+    \ifx\Hy@param\Hy@chapterstring\let\Hy@param\Hy@chapapp\fi
+  }{%
+    \ifx\Hy@param\Hy@chapterstring\let\Hy@param\Hy@chapapp\fi
+    \ifx\Hy@param\Hy@subsectionstring\let\Hy@param\Hy@subsecapp\fi
+    \ifx\Hy@param\Hy@subsubsectionstring\let\Hy@param\Hy@subsubsecapp\fi
+%    \show\Hy@param
+  }{%
+    \@latex@info{Command \string\hyper@makecurrent patched successfully}%
+    \message{Command \string\hyper@makecurrent patched successfully\on@line}%
+  }{%
+    \@latex@error{Command \string\hyper@makecurrent not patched successfully}%
+                 {You're in trouble here.}%
+  }%
+}%
+\newcommand\labelfork[2]{%
+  \ifx\thepage\relax\expandafter\@firstoftwo\else\expandafter\@secondoftwo\fi{#1}{#2}%
+}%
+\newcommand\appendix@l@section[2]{%
+  \ifnum\c@tocdepth >\z@ 
+    \addpenalty\@secpenalty
+    \addvspace{1.0em \@plus\p@}%
+    \setlength\@tempdima{\appendixtocwidth}%
+    \begingroup
+    \parindent\z@
+    \rightskip\@pnumwidth
+    \parfillskip-\@pnumwidth
+    \leavevmode
+    \bfseries
+    \advance\leftskip\@tempdima
+    \hskip-\leftskip
+    #1%
+    \nobreak\hfil
+    \nobreak\hb@xt@\@pnumwidth{\hss#2\kern-\p@\kern\p@}\par
+    \endgroup
+  \fi 
+}%
+\newcommand\appendix@l@subsection{%
+ %\@dottedtocline {2}{1.5em}{2.3em}
+ \@dottedtocline{2}{1.5em}{\dimexpr0.8em+\appendixtocwidth\relax}%
+}%
+\newcommand\appendix@l@subsubsection{%
+ %\@dottedtocline {3}{3.8em}{3.2em}
+ \@dottedtocline{3}{3.8em}{\dimexpr1.7em+\appendixtocwidth\relax}%
+}%
+\newcommand\appendixlatsections{%
+  \let\l@chapter=\appendix@l@chapter
+  \let\l@section=\appendix@l@section
+  \let\l@subsection=\appendix@l@subsection
+  \let\l@subsubsection=\appendix@l@subsubsection
+}%
+\newcommand\doappendixstuff{%
+  \renewcommand\thechapter{%
+    \texorpdfstring{\noexpand\labelfork{}{\appendixname\protect~}}{\appendixname\space}%
+    \@Alph\c@chapter
+    \texorpdfstring{\noexpand\labelfork{}{:}}{:}%
+  }%
+  \renewcommand\thesection{%
+    \texorpdfstring{\noexpand\labelfork{}{\appendixname\protect~}}{\appendixname\space}%
+    \@Alph\c@section.\number\value{section}
+    \texorpdfstring{\noexpand\labelfork{}{:}}{:}%
+  }%
+  \renewcommand\thesubsection{%
+    \texorpdfstring{\noexpand\labelfork{}{\appendixname\protect~}}{\appendixname\space}%
+    \@Alph\c@section.\number\value{section}.\number\value{subsection}%
+    \texorpdfstring{\noexpand\labelfork{}{:}}{:}%
+  }%
+  \renewcommand\thesubsubsection{%
+    \texorpdfstring{\noexpand\labelfork{}{\appendixname\protect~}}{\appendixname\space}%
+    \@Alph\c@section.\number\value{section}.\number\value{subsection}.\number\value{subsubsection}%
+    \texorpdfstring{\noexpand\labelfork{}{:}}{:}%
+  }%
+  \let\Hy@subsecapp\Hy@appendixstring
+  \let\Hy@subsubsecapp\Hy@appendixstring
+  \begingroup
+  \bfseries
+  \settowidth\@tempdima{\appendixname~A:~}%
+  \addtocontents{toc}{\string\def\string\appendixtocwidth{\the\@tempdima}}%
+  \addtocontents{toc}{\string\appendixlatsections}%
+  \endgroup
+  % \addtocontents{toc}{\protect\savedcontentsline{section}{{\large Appendices}}{}\protected@file@percent}%
+}%
+\makeatother

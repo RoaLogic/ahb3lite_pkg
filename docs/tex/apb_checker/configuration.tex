@@ -1,0 +1,95 @@
+\chapter{Configurations}\label{configurations}
+
+\section{Introduction}\label{introduction-1}
+
+The Roa Logic APB Checker VIP is a configurable Verification IP for the APB Bus.
+The core parameters, static configuration options, and functions for dynamic configuration are described in this section.
+
+\section{Core Configuration}\label{core-configuration}
+The APB Checker VIP supports APB2, APB3, APB4, and APB5. The APB version is selected by setting either of these defines:
+
+\texttt{`define APB\_VERSION\_APB5}
+
+\texttt{`define APB\_VERSION\_APB4}
+
+\texttt{`define APB\_VERSION\_APB3}
+
+If no define is set, then the default is APB2.
+
+\section{Core Parameters}\label{core-parameters}
+
+The parameter names used by the core are as specified by the APB Specification documents, which are owned and governed by ARM Ltd.
+
+\begin{longtable}[]{@{}lccl@{}}
+\toprule
+Parameter & Type & Default & Description\tabularnewline
+\midrule
+\endhead
+\texttt{ADDR\_WIDTH} & Integer & 32 & Address bus width\tabularnewline
+\texttt{DATA\_WIDTH} & Integer & 32 & Data bus widths\tabularnewline
+\texttt{USER\_REQ\_WIDTH} & Integer & 0 & User address bus width\tabularnewline
+\texttt{USER\_DATA\_WDITH} & Integer & 0 & User data bus widths\tabularnewline
+\texttt{USER\_RESP\_WIDTH} & Integer & 0 & User response bus width\tabularnewline
+\texttt{CHECK\_PSTRB} & Integer & 1 & Enable PSTRB checking\tabularnewline
+\texttt{CHECK\_PPROT} & Integer & 1 & Enable PPROT checking\tabularnewline
+\texttt{CHECK\_PSLVERR} & Integer & 1 & Enable PSLVERR checking\tabularnewline
+\texttt{WATCHDOG\_TIMEOUT} & Integer & 128 & Watchdog counter timeout value\tabularnewline
+\bottomrule
+\caption{Core Parameters}
+\end{longtable}
+
+\subsection{ADDR\_WIDTH}\label{addr_width}
+
+The \texttt{ADDR\_WIDTH} parameter specifies the width of the APB2 and above PADDR signal. The default value of the \texttt{ADDR\_WIDTH} parameter is 32.
+
+\subsection{DATA\_WIDTH}\label{data_width}
+
+The \texttt{DATA\_WIDTH} parameter specifies the width of the APB2 and above PRDATA and PWDATA signals. The default value of the \texttt{DATA\_WIDTH} parameter is 32.
+
+\subsection{USER\_REQ\_WIDTH}\label{user_req_width}
+
+The \texttt{USER\_REQ\_WIDTH} parameter specifies the width of the APB5 PAUSER signal. A value of zero (`0') indicates the signal is not present in the APB bus and checking is disabled. The default value of the \texttt{USER\_REQ\_WIDTH} parameter is 0; i.e. disabled.
+
+\subsection{USER\_DATA\_WIDTH}\label{user_data_width}
+
+The \texttt{USER\_DATA\_WIDTH} parameter specifies the width of the APB5 PRUSER and PWUSER signals. A value of zero (`0') indicates the signals are not present in the APB bus and checking is disabled. The default value of the \texttt{USER\_DATA\_WIDTH} parameter is 0; i.e. disabled.
+
+\subsection{USER\_RESP\_WIDTH}\label{user_resp_width}
+
+The \texttt{USER\_RESP\_WIDTH} parameter specifies the width of the APB5 PBUSER bus. A value of zero (`0') indicates the signal is not present in the APB bus and checking is disabled. The default value of the \texttt{USER\_RESP\_WIDTH} parameter is 0; i.e. disabled.
+
+\subsection{CHECK\_PSTRB}\label{check_pstrb}
+
+The \texttt{CHECK\_PSTRB} parameter enables or disables checking of the optional APB4 and above PSTRB signal. If \texttt{CHECK\_PSTRB} has a value of zero (0), then checking the PSTRB signal is disabled. Any other value enables checking the PSTRB signal. The default value of the \texttt{CHECK\_PSTRB} parameter is 1; i.e. enabled.
+
+\subsection{CHECK\_PPROT}\label{check_pprot}
+
+The \texttt{CHECK\_PPROT} parameter enables or disables checking of the optional APB4 and above PPROT signal. If \texttt{CHECK\_PPROT} has a value of zero (0), then checking the PPROT signal is disabled. Any other value enables checking the PPROT signal. The default value of the \texttt{CHECK\_PPROT} parameter is 1; i.e. enabled.
+
+\subsection{CHECK\_PSLVERR}\label{check_pslverr}
+
+The \texttt{CHECK\_PSLVERR} parameter enables or disables checking of the optional APB3 and above PSLVERR signal. If \texttt{CHECK\_PSLVERR} has a value of zero (0), then checking the PSLVERR signal is disabled. Any other value enables checking the PSLVERR signal. The default value of the \texttt{CHECK\_PSLVERR} parameter is 1; i.e. enabled.
+
+\subsection{WATCHDOG\_TIMEOUT}\label{watchdog_timeout}
+
+The \texttt{WATCHDOG\_TIMEOUT} parameter sets the expiration counter value for the optional watchdog. A value of zero (`0') indicates the watchdog is disabled. The default value of the \texttt{WATCHDOG\_TIMEOUT} parameter is 128.
+
+
+\section{Functions for Dynamic Configuration}\label{dynamic_configuration}
+
+The APB Checker VIP allows the user to dynamically change the severity level of each rule. Changing the severity level allows the user to stop the simulation when hitting a certain rule, or completely ignoring a rule, for example.
+See the \hyperref[extending]{extending} section for more details.
+
+\subsection{get\_severity}\label{get_severity}
+
+Synopsis: \texttt{function automatic severity\_t get\_severity (input int msg\_no)}
+
+The \texttt{get\_severity} function returns the severity level of message \texttt{msg\_no}.
+Note that the rule number is one higher than the message number; \texttt{msg\_no}=0 means rule \#1.
+
+\subsection{set\_severity}\label{set_severity}
+
+Synopsis: \texttt{task automatic set\_severity (input int msg\_no, severity\_t severity)}
+
+The \texttt{set\_severity} function set the severity level of message \texttt{msg\_no} to \texttt{severity}.
+Note that the rule number is one higher than the message number; \texttt{msg\_no}=0 means rule \#1.

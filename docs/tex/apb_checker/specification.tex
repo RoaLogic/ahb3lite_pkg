@@ -1,0 +1,29 @@
+\chapter{Specifications} \label{specifications}
+
+\section{Functional Description}\label{functional-description}
+
+The Roa Logic APB Bus Checker VIP is a configurable, fully parameterized soft Verification IP (VIP)
+that continuously and autonomosly observes and verifies all transactions on the APB bus.
+The VIP is fully compliant with the AMBA APB2, APB3, APB4, and APB5 protocols.
+
+
+\section{Operating Modes}\label{operating-modes}
+
+The VIP supports the APB2, APB3, APB4, and APB5 bus protocols. The protocol to verify is selected using a define statement;
+
+\texttt{`define APB\_VERSION\_APB5}
+
+\texttt{`define APB\_VERSION\_APB4}
+
+\texttt{`define APB\_VERSION\_APB3}
+
+The default APB2 protocol is used when no define is set. When APB\_VERSION\_APB5 is defined, then APB\_VERSION\_APB4 is automatically defined. When APB\_VERSION\_APB4 is defined, then APB\_VERSION\_APB3 is automatically defined.
+The module ports and executed rules reflect the selected protocol.
+ 
+
+\subsection{PCLK}\label{PCLK}
+APB is a synchronous protocol. All transactions take place on the rising edge of PCLK.
+Most of the rules are triggered on the rising edge of PCLK. This has the advantage of simple rule design and fast execution. The protocol checker has a minimal simulation performance effect. The disadvantage is that the checker does not look at values inbetween clock edges. It is assumed that all APB signals are driven by registers or at least behave like being driven by registers.
+
+The APB Protocol Checker VIP has no rule to validate that PCLK is connected and driven. This must be validated outside of the VIP.
+
