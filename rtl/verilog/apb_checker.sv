@@ -78,7 +78,7 @@
 `endif
 
 
-module apb_protocol_checker
+module apb_checker
 import ahb3lite_pkg::*;
 #(
   parameter int ADDR_WIDTH       = 32,       //PADDR bus width
