@@ -34,6 +34,8 @@
 \usepackage[olditem,oldenum]{paralist}
 \usepackage{titling}
 \usepackage{tikz-timing} % Draw digital timing diagrams
+\usepackage{etoolbox} %to modify thebibliography
+
 
 % Setup margins & page style
 
@@ -87,6 +89,10 @@
 
 \titleformat{\subsubsection}
   {\color{rlsection}\sffamily\large\bfseries}{\thesubsubsection}{1em}{}
+
+%add section number to bibliography
+\patchcmd{\thebibliography}{*}{}{}{}
+
 
 %\titlespacing*{\chapter}     {0pt}{1.5ex plus 1ex minus .2ex}{2.3ex plus .2ex}
 \titlespacing*{\chapter}      {0pt}{-50pt}{20pt}
