@@ -899,5 +899,5 @@ import ahb3lite_pkg::*;
     if (WATCHDOG_TIMEOUT > 0)
       if (~|watchdog_cnt)
         message(22);
-endmodule : apb_protocol_checker
+endmodule : apb_checker
 
