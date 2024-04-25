@@ -48,7 +48,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 \section{Rules}
 
-\subsection{PSEL Must remain high for the entire transfer}
+\subsection{PSEL Must remain high for the entire transfer}\label{subsec:APB-1}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -82,7 +82,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PSEL Undefined}
+\subsection{PSEL Undefined}\label{subsec:APB-2}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -116,7 +116,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PENABLE must be low during Setup Phase}
+\subsection{PENABLE must be low during Setup Phase}\label{subsec:APB-3}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -149,7 +149,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 \end{figure}
 
 
-\subsection{PENABLE must be high during Access Phase}
+\subsection{PENABLE must be high during Access Phase}\label{subsec:APB-4}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -183,7 +183,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PENABLE undefined}
+\subsection{PENABLE undefined}\label{subsec:APB-5}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -217,7 +217,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PADDR must remain stable for the entire transfer}
+\subsection{PADDR must remain stable for the entire transfer}\label{subsec:APB-6}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -251,7 +251,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PADDR versus PSTRB misaligned}
+\subsection{PADDR versus PSTRB misaligned}\label{subsec:APB-7}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -287,7 +287,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PADDR should be aligned to DATA\_WIDTH}
+\subsection{PADDR should be aligned to DATA\_WIDTH}\label{subsec:APB-8}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -322,7 +322,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PADDR undefined}
+\subsection{PADDR undefined}\label{subsec:APB-9}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -356,7 +356,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWRITE must remain stable for the entire transfer}
+\subsection{PWRITE must remain stable for the entire transfer}\label{subsec:APB-10}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -390,7 +390,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWRITE undefined}
+\subsection{PWRITE undefined}\label{subsec:APB-11}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -424,7 +424,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PSTRB value non byte/word/dword/...}
+\subsection{PSTRB value non byte/word/dword/...}\label{subsec:APB-12}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -461,7 +461,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PSTRB must remain stable for the entire transfer}
+\subsection{PSTRB must remain stable for the entire transfer}\label{subsec:APB-13}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -495,7 +495,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PSTRB undefined}
+\subsection{PSTRB undefined}\label{subsec:APB-14}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -529,7 +529,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PPROT must remain stable for the entire transfer}
+\subsection{PPROT must remain stable for the entire transfer}\label{subsec:APB-15}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -565,7 +565,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PPROT undefined}
+\subsection{PPROT undefined}\label{subsec:APB-16}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -599,7 +599,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWDATA must remain stable for the entire transfer}
+\subsection{PWDATA must remain stable for the entire transfer}\label{subsec:APB-17}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -634,7 +634,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWDATA contains 'x'}
+\subsection{PWDATA contains 'x'}\label{subsec:APB-18}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -669,7 +669,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWDATA contains 'x'}
+\subsection{PWDATA contains 'x'}\label{subsec:APB-19}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -705,7 +705,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PRDATA contains 'x'}
+\subsection{PRDATA contains 'x'}\label{subsec:APB-20}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -743,7 +743,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PREADY undefined during Access phase}
+\subsection{PREADY undefined during Access phase}\label{subsec:APB-21}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -778,7 +778,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PSLVERR undefined}
+\subsection{PSLVERR undefined}\label{subsec:APB-22}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -816,7 +816,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{Watchdog expired}
+\subsection{Watchdog expired}\label{subsec:APB-23}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -852,7 +852,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWAKEUP must remain high until the end of the transfer}
+\subsection{PWAKEUP must remain high until the end of the transfer}\label{subsec:APB-24}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -890,7 +890,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWAKEUP should be asserted at least one cycle before PSEL}
+\subsection{PWAKEUP should be asserted at least one cycle before PSEL}\label{subsec:APB-25}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -924,7 +924,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWAKEUP raised without starting a transfer}
+\subsection{PWAKEUP raised without starting a transfer}\label{subsec:APB-26}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -958,7 +958,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWAKEUP undefined}
+\subsection{PWAKEUP undefined}\label{subsec:APB-27}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -993,7 +993,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PAUSER must remain stable for the entire transfer}
+\subsection{PAUSER must remain stable for the entire transfer}\label{subsec:APB-28}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1027,7 +1027,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PAUSER undefined}
+\subsection{PAUSER undefined}\label{subsec:APB-29}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1061,7 +1061,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PAUSER should be max 128 bits}
+\subsection{PAUSER should be max 128 bits}\label{subsec:APB-30}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1075,7 +1075,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWUSER must remain stable for the entire transfer}
+\subsection{PWUSER must remain stable for the entire transfer}\label{subsec:APB-31}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1109,7 +1109,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWUSER undefined}
+\subsection{PWUSER undefined}\label{subsec:APB-32}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1143,7 +1143,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWUSER should be max DATA\_WIDTH/2 bits}
+\subsection{PWUSER should be max DATA\_WIDTH/2 bits}\label{subsec:APB-33}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1157,7 +1157,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PRUSER contains 'x'}
+\subsection{PRUSER contains 'x'}\label{subsec:APB-34}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1193,7 +1193,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PRUSER should be max DATA\_WIDTH/2 bits}
+\subsection{PRUSER should be max DATA\_WIDTH/2 bits}\label{subsec:APB-35}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1205,7 +1205,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PBUSER contains 'x'}
+\subsection{PBUSER contains 'x'}\label{subsec:APB-36}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1241,7 +1241,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PBUSER should be max 16 bits}
+\subsection{PBUSER should be max 16 bits}\label{subsec:APB-37}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1255,7 +1255,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PSTRB must be low during read transfer}
+\subsection{PSTRB must be low during read transfer}\label{subsec:APB-38}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1290,7 +1290,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PADDR should be max 32 bits}
+\subsection{PADDR should be max 32 bits}\label{subsec:APB-39}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1302,7 +1302,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PWDATA should be max 8, 16, or 32 bits wide}
+\subsection{PWDATA should be max 8, 16, or 32 bits wide}\label{subsec:APB-40}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1314,7 +1314,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PRDATA should be max 8, 16, or 32 bits wide}
+\subsection{PRDATA should be max 8, 16, or 32 bits wide}\label{subsec:APB-41}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1326,7 +1326,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PRESETn Undefined}
+\subsection{PRESETn Undefined}\label{subsec:APB-42}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1358,7 +1358,7 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 
 
 
-\subsection{PCLK Undefined}
+\subsection{PCLK Undefined}\label{subsec:APB-43}
 
 \begin{description}
   \setlength\itemsep{-0.45em}
@@ -1389,3 +1389,59 @@ The waveform also shows the Idle, Setup, and Access phases of the APB transfer.
 \caption{APB-43 Example}\label{fig:APB-43}
 \end{figure}
 
+\pagebreak
+
+
+
+\section{Rules per signal}\label{sec:RulesPerSignal}
+
+\begin{longtable}[]{@{}lrl@{}}
+\toprule
+\textbf{Signal} & \textbf{MsgNo} & \textbf{Message}\tabularnewline
+\midrule
+\endhead
+\texttt{PRESETn} & 42 & \nameref{subsec:APB-42}\tabularnewline
+\texttt{PCLK}    & 43 & \nameref{subsec:APB-43}\tabularnewline
+\texttt{PSEL}    &  1 & \nameref{subsec:APB-1} \tabularnewline
+\texttt{PSEL}    &  2 & \nameref{subsec:APB-2} \tabularnewline
+\texttt{PENABLE} &  3 & \nameref{subsec:APB-3} \tabularnewline
+\texttt{PENABLE} &  4 & \nameref{subsec:APB-4} \tabularnewline
+\texttt{PENABLE} &  5 & \nameref{subsec:APB-5} \tabularnewline
+\texttt{PADDR}   &  6 & \nameref{subsec:APB-6} \tabularnewline
+\texttt{PADDR}   &  7 & \nameref{subsec:APB-7} \tabularnewline
+\texttt{PADDR}   &  8 & \nameref{subsec:APB-8} \tabularnewline
+\texttt{PADDR}   &  9 & \nameref{subsec:APB-9} \tabularnewline
+\texttt{PADDR}   & 39 & \nameref{subsec:APB-39}\tabularnewline
+\texttt{PWRITE}  & 10 & \nameref{subsec:APB-10}\tabularnewline
+\texttt{PWRITE}  & 11 & \nameref{subsec:APB-11}\tabularnewline
+\texttt{PSTRB}   & 12 & \nameref{subsec:APB-12}\tabularnewline
+\texttt{PSTRB}   & 13 & \nameref{subsec:APB-13}\tabularnewline
+\texttt{PSTRB}   & 14 & \nameref{subsec:APB-14}\tabularnewline
+\texttt{PSTRB}   & 38 & \nameref{subsec:APB-38}\tabularnewline
+\texttt{PPROT}   & 15 & \nameref{subsec:APB-15}\tabularnewline
+\texttt{PPROT}   & 16 & \nameref{subsec:APB-16}\tabularnewline
+\texttt{PWDATA}  & 17 & \nameref{subsec:APB-17}\tabularnewline
+\texttt{PWDATA}  & 18 & \nameref{subsec:APB-18}\tabularnewline
+\texttt{PWDATA}  & 19 & \nameref{subsec:APB-19}\tabularnewline
+\texttt{PWDATA}  & 40 & \nameref{subsec:APB-40}\tabularnewline
+\texttt{PRDATA}  & 20 & \nameref{subsec:APB-20}\tabularnewline
+\texttt{PRDATA}  & 41 & \nameref{subsec:APB-41}\tabularnewline
+\texttt{PREADY}  & 21 & \nameref{subsec:APB-21}\tabularnewline
+\texttt{PSLVERR} & 22 & \nameref{subsec:APB-22}\tabularnewline
+\texttt{PWAKEUP} & 24 & \nameref{subsec:APB-24}\tabularnewline
+\texttt{PWAKEUP} & 25 & \nameref{subsec:APB-25}\tabularnewline
+\texttt{PWAKEUP} & 26 & \nameref{subsec:APB-26}\tabularnewline
+\texttt{PWAKEUP} & 27 & \nameref{subsec:APB-27}\tabularnewline
+\texttt{PAUSER}  & 28 & \nameref{subsec:APB-28}\tabularnewline
+\texttt{PAUSER}  & 29 & \nameref{subsec:APB-29}\tabularnewline
+\texttt{PAUSER}  & 30 & \nameref{subsec:APB-30}\tabularnewline
+\texttt{PWUSER}  & 31 & \nameref{subsec:APB-31}\tabularnewline
+\texttt{PWUSER}  & 32 & \nameref{subsec:APB-32}\tabularnewline
+\texttt{PWUSER}  & 33 & \nameref{subsec:APB-33}\tabularnewline
+\texttt{PRUSER}  & 34 & \nameref{subsec:APB-34}\tabularnewline
+\texttt{PRUSER}  & 35 & \nameref{subsec:APB-35}\tabularnewline
+\texttt{PBUSER}  & 36 & \nameref{subsec:APB-36}\tabularnewline
+\texttt{PBUSER}  & 37 & \nameref{subsec:APB-37}\tabularnewline
+\bottomrule
+\caption{Rules per signal}
+\end{longtable}
