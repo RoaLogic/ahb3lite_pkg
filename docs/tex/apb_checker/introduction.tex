@@ -1,8 +1,8 @@
 \chapter{Introduction} \label{introduction}
 
-The Roa Logic APB Bus Checker Verification IP helps designers use the ARM\textsuperscript{\textregistered}  AMBA\textsuperscript{\textregistered}  APB\textsuperscript{\cite{ArmAPB}} bus in their designs. Throughout this document ARM\textsuperscript{\textregistered}  AMBA\textsuperscript{\textregistered}  APB will be simply refered to as APB.
-The Roa Logic APB Bus Checker continuously snoops the APB bus and reports any protocol issues it detects.
-In addition to rules checking, the ABP Bus Checker VIP contains an optional watchdog that fires when the APB Bus is unresponsive.
+The Roa Logic APB Checker Verification IP helps designers use the ARM\textsuperscript{\textregistered}  AMBA\textsuperscript{\textregistered}  APB\textsuperscript{\cite{ArmAPB}} bus in their designs. Throughout this document ARM\textsuperscript{\textregistered}  AMBA\textsuperscript{\textregistered}  APB will be simply refered to as APB.
+The Roa Logic APB Checker VIP continuously snoops the APB bus and reports any protocol issues it detects.
+In addition to rules checking, the ABP Checker VIP contains an optional watchdog that fires when the APB bus becomes unresponsive.
 The APB Bus Checker VIP supports the following APB versions:
 \begin{itemize}
 \item
@@ -22,19 +22,21 @@ The Roa Logic APB Bus Checker VIP is released under the permissive GPLv3 license
 
 \begin{itemize}
 \item
-  Plug 'n Play APB Bus Checker
+  Plug 'n Play APB Checker
 \item
   Compliant with APB2, APB3, APB4, and APB5 Bus protocols
 \item
   Supports configurable APB address, data, user signal, and response widths
 \item
-  Autonomously checks APB bus transactions and signals
+  Autonomously checks APB transactions and signals
 \item
   User configurable severity per rule
 \item
   Easily extensible with custom rules
 \item
   Configurable watchdog fires when the APB bus is unresponsive
+\item
+  Delivered in plain text SystemVerilog format
 \end{itemize}
 
 
