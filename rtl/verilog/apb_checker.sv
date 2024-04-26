@@ -78,7 +78,7 @@
 `endif
 
 
-module apb_protocol_checker
+module apb_checker
 import ahb3lite_pkg::*;
 #(
   parameter int ADDR_WIDTH       = 32,       //PADDR bus width
@@ -899,5 +899,5 @@ import ahb3lite_pkg::*;
     if (WATCHDOG_TIMEOUT > 0)
       if (~|watchdog_cnt)
         message(22);
-endmodule : apb_protocol_checker
+endmodule : apb_checker
 
