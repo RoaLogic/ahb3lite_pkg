@@ -2,5 +2,121 @@
 
 \section{Introduction}
 
-Extending the VIP
+The Roa Logic APB Checker VIP can be easiliy extended with custom rules. This chapter explains the structure of the VIP and how to modify it.
+
+\section{Structure}
+
+The VIP consits of 3 sections; the message structure, the checks and rules, and the module body.
+
+
+\subsection{The Message Structure}
+
+When a rule triggers, a message and severity is reported.
+The reporting is done by the \texttt{message} task which only takes a message number as input.
+
+\lstset{language=verilog,
+        basicstyle=\small\ttfamily,
+        showstringspaces=false,
+        frame=single}
+        
+\begin{lstlisting}
+task automatic message (input int msg_no);
+  ...
+endtask : message
+\end{lstlisting}
+
+\noindent
+The message and its severity level are stored in a struct.
+
+\begin{lstlisting}
+typedef struct {
+  severity_t severity;
+  string     message;
+} message_t;
+\end{lstlisting}
+
+\noindent
+The message is stored as a SystemVerilog string, whereas the severity level is a user defined integer type.
+
+\begin{lstlisting}
+typedef enum int {OFF    =0,
+                  INFO   =1,
+                  WARNING=2,
+                  ERROR  =3,
+                  FATAL  =4} severity_t;
+\end{lstlisting}
+
+\noindent
+Extend the enum to add a new severity level, like this:
+
+\begin{lstlisting}
+typedef enum int {OFF    =0,
+                  INFO   =1,
+                  WARNING=2,
+                  ERROR  =3,
+                  FATAL  =4,
+                  MY_LVL =5} severity_t;
+\end{lstlisting}
+
+\pagebreak
+\noindent
+All messages are stored in the unpacked array \texttt{\_msg} of type \texttt{message\_t}.
+The messages are loaded into the array using an initial block. This approach makes adding new messages straighforward. First increase \texttt{MESSAGE\_COUNT}, then add the message with its default severity level.
+
+\begin{lstlisting}
+initial
+begin
+  ...
+  _msg[MESSAGE_COUNT-1] = '{MY_LVL, "My message"};
+  ...
+end
+\end{lstlisting}
+
+
+
+\subsection{Creating new checks/rules}
+
+All rules and checks are written as verilog tasks. Each task has the following structure;
+
+\begin{lstlisting}
+task check_myrules
+  //rule 1
+  if (condition)
+    message(messageNumber);
+    
+  //rule 2
+  if (condition2)
+    message(messageNumber2);
+endtask : check_myrules
+\end{lstlisting}
+
+\noindent
+If a check or rule is only applicable to a specific APB version, then the rule/check must be enwrapped as shown below for the \texttt{check\_pbuser} task.
+
+\begin{lstlisting}
+  /*
+   * Check PBUSER
+   */
+`ifdef APB_VERSION_APB5
+  task check_pbuser;
+    //PBUSER undefined when transfer completes?
+    if (PENABLE && PREADY)
+      if (PBUSER === 1'bx || PBUSER === 1'bz)
+        message(35);
+  endtask : check_pbuser
+`endif
+\end{lstlisting}
+
+
+
+\subsection{Adding the check in the main body}
+
+The final step is adding the new check to the main body. Because APB is a synchronous protocol, almost all checks are triggered by \texttt{PCLK}.
+
+\begin{lstlisting}
+  /*
+   * Check MyRules
+   */
+   always @(posedge PCLK) check_myrules();
+\end{lstlisting}
 
