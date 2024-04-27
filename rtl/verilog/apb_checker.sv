@@ -743,12 +743,14 @@ import ahb3lite_pkg::*;
   /*
    * Check PRESETn
    */
+  initial check_presetn();
   always @(PRESETn) check_presetn();
   
 
   /*
    * Check PCLK
    */
+  initial check_pclk();
   always @(PCLK) check_pclk();
 
 
