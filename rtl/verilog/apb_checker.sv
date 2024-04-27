@@ -234,13 +234,13 @@ import ahb3lite_pkg::*;
       if ($bits(PADDR) > 32)
         message(38);
 
-      if (($bits(PWDATA) !=  8) ||
-          ($bits(PWDATA) != 16) ||
+      if (($bits(PWDATA) !=  8) &&
+          ($bits(PWDATA) != 16) &&
           ($bits(PWDATA) != 32) )
         message(39);
 
-      if (($bits(PRDATA) !=  8) ||
-          ($bits(PRDATA) != 16) ||
+      if (($bits(PRDATA) !=  8) &&
+          ($bits(PRDATA) != 16) &&
           ($bits(PRDATA) != 32) )
         message(40);
 
